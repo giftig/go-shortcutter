@@ -1,0 +1,11 @@
+# Vim
+*.swp
+*.swo
+
+# Python
+*.pyc
+/*.egg-info
+/dist
+
+# Log files
+*.log
