@@ -13,5 +13,5 @@ setup(
     maintainer='Rob Moore',
     maintainer_email='giftiger.wunsch@xantoria.com',
     url='http://www.xantoria.com/',
-    install_requires=[]
+    install_requires=['Flask>=1.1.2', 'gunicorn>=20.0.4']
 )

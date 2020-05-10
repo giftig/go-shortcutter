@@ -18,7 +18,10 @@ class FileBackend(object):
         raw = None
 
         if not os.path.isfile(self.filename):
-            os.makedirs(os.path.dirname(self.filename))
+            base_dir = os.path.dirname(self.filename)
+            if not os.path.isdir(base_dir):
+                os.makedirs(base_dir)
+
             self._data = {}
             self._save_data()
 
