@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Go!</title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <meta name="description" content="Go shortcut tool"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/go.js"></script>
+    <script>
+      $(function() {
+        window.go = new Go({
+          $notices: $('#message-box'),
+          $newShortcuts: $('.new-shortcuts .shortcuts-table'),
+          $miniNav: $('.shortcut-selector'),
+          $home: $('#home'),
+          $details: $('#details')
+        });
+        go.init();
+      });
+    </script>
+    <link rel="stylesheet" href="css/go.css" type="text/css">
+  </head>
+  <body>
+    <header><h1><a href="/">Go!</a></h1></header>
+    <section id="home" class="content">
+      <div id="message-box" class="box"></div>
+      <div class="shortcut-selector box"></div>
+
+      <section class="new-shortcuts">
+        <h2>Recent shortcuts</h2>
+        <div class="shortcuts-table">
+          <p>Loading...</p>
+        </div>
+      </section>
+    </section>
+    <section id="details">
+    </section>
+  </body>
+</html>

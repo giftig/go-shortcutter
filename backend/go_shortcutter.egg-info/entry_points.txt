@@ -1,0 +1,3 @@
+[console_scripts]
+gosh = go.cli.shortcuts:main
+

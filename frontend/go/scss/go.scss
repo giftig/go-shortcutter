@@ -1,0 +1,336 @@
+body, head {
+  margin: 0px;
+  padding: 0px;
+}
+
+body {
+  font-family: arial, sans-serif;
+  background-color: #FFFFCC;
+  color: #800000;
+}
+
+header {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 120px;
+  z-index: 10;
+
+  font-family: verdana, tahoma, arial, sans-serif;
+  font-weight: bold;
+  font-size: 1.1em;
+
+  background-color: #800000;
+  color: #FFFFCC;
+
+  &>h1 {
+    text-align: center;
+
+    &>a:hover, &>a:active, &>a:focus {
+      outline: none;
+      text-decoration: none;
+      text-shadow: -2px 2px rgba(0, 0, 0, 0.4);
+    }
+  }
+}
+
+section.content {
+  position: absolute;
+  left: 50%;
+  top: 140px;
+  width: 90%;
+
+  margin-left: -45%;
+  margin-right: auto;
+
+  padding: 10px;
+
+  &>section {
+    margin-top: 30px;
+  }
+
+  h2 {
+    font-size: 1.4em;
+  }
+
+  table {
+    border: none;
+
+    td {
+      padding-right: 40px;
+    }
+    td:first-child {
+      font-weight: bold;
+      padding-left: 5px;
+    }
+    td:last-child {
+      padding-right: 5px;
+    }
+  }
+
+  .shortcuts-table button {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-weight: bold;
+    font: inherit;
+  }
+}
+
+
+a:link, a:active, a:visited {
+  text-decoration: none;
+}
+a:link, a:active, a:visited, a:hover {
+  color: inherit;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+
+section.new-shortcuts, section.new-pastes {
+  table {
+    font-family: monospace;
+    font-size: 1.2em;
+  }
+}
+
+section.create {
+  padding-top: 50px;
+
+  form {
+    font-family: monospace;
+    font-weight: bold;
+  }
+
+  input[data-name="shortcut"] {
+    margin-right: 10px;
+    width: 100px;
+  }
+  input[data-name="url"] {
+    margin-left: 10px;
+    width: 300px;
+  }
+  input.inactive {
+    color: #909090;
+    border-color: #909090;
+  }
+  h2 {
+    margin-bottom: 5px;
+  }
+}
+
+section.create-paste {
+  display: none;
+}
+
+a.more {
+  display: inline-block;
+  border-bottom: 1px dotted;
+
+  margin-left: 10px;
+  margin-top: 1em;
+
+  &:hover {
+    font-style: italic;
+    text-decoration: none;
+  }
+}
+
+.box {
+  position: absolute;
+  z-index: 10;
+}
+
+input[type="submit"].plain, input[type="button"].plain, button.plain {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: inherit;
+  font-weight: bold;
+}
+
+#message-box {
+  display: none;
+  position: fixed;
+
+  left: 5%;
+  top: 130px;
+
+  cursor: default;
+  font-family: verdana, arial, sans-serif;
+  background-color: inherit;
+
+  border-style: solid;
+  border-width: 2px;
+  margin-left: 10px;
+  padding: 5px 20px;
+
+  &:before {
+    font-weight: bold;
+    padding-right: 20px;
+  }
+  &:after {
+    content: "(click to dismiss)";
+
+    color: #909090;
+    font-size: 0.8em;
+    padding-left: 20px;
+  }
+
+  &[data-message-type="info"] {
+    border-color: #909090;
+    color: #909090;
+
+    &:before {
+      content: "INFO";
+    }
+  }
+
+  &[data-message-type="success"] {
+    border-color: #009000;
+    color: #009000;
+
+    &:before {
+      content: "SUCCESS";
+    }
+  }
+  &[data-message-type="error"] {
+    border-color: #FF0000;
+    color: #FF0000;
+
+    &:before {
+      content: "ERROR";
+    }
+  }
+}
+
+.shortcut-selector {
+  position: fixed;
+
+  right: 20px;
+  top: 130px;
+  font-family: monospace;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+input[data-name="shortcut"] {
+  margin-left: 5px;
+}
+input.underline {
+  border: none;
+  background: none;
+  border-bottom: 1px solid #800000;
+  color: #800000;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.rawtext {
+  background-color: #FFFFFF;
+  font-size: 1.2em;
+  font-family: monospace;
+}
+h2.deleted {
+  text-decoration: line-through;
+}
+
+textarea.paste {
+  border: 1px solid #800000;
+  background-color: white;
+  color: #800000;
+  padding: 10px;
+  margin: 10px 0px;
+
+  width: 80%;
+  min-height: 300px;
+}
+
+.shortcut-thumbnails {
+  font-size: 0;
+
+  a {
+    display: inline-block;
+    width: 150px;
+    height: 150px;
+
+    padding: 10px;
+    margin: 10px;
+    border: 1px solid #800000;
+
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  img {
+    max-height: 150px;
+    max-width: 150px;
+    margin: 0;
+  }
+}
+
+@media (max-width: 800px) {
+  .shortcut-selector {
+    left: 0px;
+    width: 100%;
+
+    background-color: inherit;
+    text-align: center;
+  }
+
+  .shortcut-thumbnails {
+    margin-top: 40px;
+  }
+}
+
+@media (max-width: 600px) {
+  section.new-shortcuts table tr td:not(:first-child),
+  section.new-pastes table tr td:not(:first-child) {
+    display: none;
+  }
+  section.create-shortcuts {
+    input[data-name="shortcut"] {
+      width: 150px;
+    }
+
+    input[data-name="url"] {
+      display: block;
+      margin: 10px 0 !important;
+      width: 90% !important;
+    }
+  }
+
+  header {
+    height: 60px;
+
+    &>h1 {
+      margin: 10px;
+    }
+  }
+
+  .shortcut-selector {
+    top: 70px !important;
+  }
+  section.content {
+    top: 80px !important;
+  }
+
+  .shortcut-thumbnails {
+    text-align: center;
+
+    a {
+      display: block;
+    }
+  }
+}
+
+@media (max-width: 400px) {
+  section.create-shortcuts,
+  section.new-shortcuts,
+  section.new-pastes {
+    text-align: center;
+  }
+}

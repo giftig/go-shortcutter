@@ -1,0 +1,11 @@
+setup.py
+go/__init__.py
+go/const.py
+go/models.py
+go/serialisation.py
+go/utils.py
+go_shortcutter.egg-info/PKG-INFO
+go_shortcutter.egg-info/SOURCES.txt
+go_shortcutter.egg-info/dependency_links.txt
+go_shortcutter.egg-info/entry_points.txt
+go_shortcutter.egg-info/top_level.txt
