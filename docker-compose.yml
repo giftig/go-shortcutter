@@ -6,6 +6,8 @@ services:
     image: giftig/go:2
     ports:
       - 8081:8080
+    volumes:
+      - ${GO_REDIRECT_DIR}:/usr/src/db
 
   frontend:
     build: ./frontend

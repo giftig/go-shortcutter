@@ -5,6 +5,8 @@ COPY . /usr/src/app
 
 EXPOSE 8080
 
+VOLUME /usr/src/sb
+
 RUN pip install --no-cache .
 
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "go.api.main:init('/usr/src/app/db.json')"]
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "go.api.main:init('/usr/src/db/go.json')"]

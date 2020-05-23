@@ -1,4 +1,7 @@
 (function($) {
+  var SHORTCUT_TRUNCATE_LENGTH = 16;
+  var URL_TRUNCATE_LENGTH = 50;
+
   var Redirector = {
     redirect: function(target, onError) {
       Client.getUrl(
@@ -12,16 +15,16 @@
   };
 
   var Utils = {
-    // Truncate a stirng to 16 (or n) chars by adding an ellipsis
+    // Truncate a stirng to n chars by adding an ellipsis
     // Return a summary of the whole operation
     truncate: function(s, n) {
-      n = n || 16;
+      n = n || SHORTCUT_TRUNCATE_LENGTH;
 
       var isTruncated = false;
       var truncated = s;
 
       if (s.length > n) {
-        truncated = s.slice(0, n);
+        truncated = s.slice(0, n - 3) + '...';
         isTruncated = true;
       }
 
@@ -149,7 +152,7 @@
           $('<a>')
             .attr('href', s.url)
             .attr('target', '_blank')
-            .text(s.url)
+            .text(Utils.truncate(s.url, URL_TRUNCATE_LENGTH).truncated)
         );
 
         var $created = $('<td>').addClass('time').text(Utils.reformatDate(s.created_on));
@@ -166,11 +169,12 @@
     }
   };
 
-  var Nav = function() {
+  var Nav = function($box) {
     var self = this;
+    self.$box = $box;
+
     self.load = function(shortcut, onError) {
       window.location.hash = '#/shortcut/' + shortcut;
-      console.log('Loading info for shortcut ' + shortcut);
     };
   };
 
@@ -271,6 +275,7 @@
           );
           return;
         }
+
         if (frag.startsWith('#/shortcut/')) {
           self.nav.load(frag.split('/')[2], self.home.render);
           return;
