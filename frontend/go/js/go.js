@@ -242,7 +242,7 @@
     };
   };
 
-  var Nav = function($box) {
+  var InfoBox = function($box) {
     var self = this;
     self.$box = $box;
 
@@ -251,36 +251,15 @@
     };
   };
 
-  var MiniNav = function(nav, $box) {
-    var self = this;
-    self.nav = nav;
-    self.$box = $box;
-    self.applyFilter = function() {};
-
-    self.init = function() {
-      self.$box.find('input').on('input', function() {
-        self.applyFilter($(this).val());
-      });
-    };
-  };
-
-  var Home = function(cfg) {
+  var Home = function(shortcuts, searchTools) {
     var self = this;
 
-    self.nav = cfg.nav;
-    self.mininav = cfg.mininav;
-    self.noticeHandler = cfg.noticeHandler;
-    self.shortcuts = cfg.shortcuts;
-    self.sortTools = cfg.sortTools;
-    self.$box = cfg.$home;
+    self.shortcuts = shortcuts;
+    self.searchTools = searchTools;
 
     self.render = function() {
       self.shortcuts.init();
-      self.mininav.init();
-      self.sortTools.init();
-
-      $('section.content').hide();
-      self.$box.show();
+      self.searchTools.init();
     };
   };
 
@@ -295,18 +274,25 @@
     };
   };
 
-  var SortTools = function(shortcuts, $box) {
+  var SearchTools = function(shortcuts, $box) {
     var self = this;
 
     self.$box = $box;
     self.shortcuts = shortcuts;
 
+    self.$sort = self.$box.find('.sort');
+    self.$filter = self.$box.find('.filter');
+
     self.init = function() {
-      var $alpha = self.$box.find('.alpha');
-      var $chrono = self.$box.find('.chrono');
+      var $alpha = self.$sort.find('.alpha');
+      var $chrono = self.$sort.find('.chrono');
 
       $alpha.on('click', self.shortcuts.sortAlphabetical);
       $chrono.on('click', self.shortcuts.sortChronological);
+
+      self.$filter.find('input').on('input', function() {
+        self.shortcuts.applyFilter($(this).val());
+      });
     };
   };
 
@@ -314,26 +300,16 @@
     var self = this;
     cfg = cfg || {};
 
-    self.nav = new Nav();
-    self.mininav = new MiniNav(self.nav, cfg.$miniNav);
+    self.infoBox = new InfoBox(cfg.$infoBox);
     self.noticeHandler = new NoticeHandler(cfg.$notices);
     self.shortcuts = new ShortcutList(self.noticeHandler, self.nav, cfg.$shortcuts);
-    self.sortTools = new SortTools(self.shortcuts, cfg.$sortTools);
+    self.searchTools = new SearchTools(self.shortcuts, cfg.$searchTools);
 
-    self.home = new Home({
-      nav: self.nav,
-      mininav: self.mininav,
-      noticeHandler: self.noticeHandler,
-      shortcuts: self.shortcuts,
-      sortTools: self.sortTools,
-      $home: cfg.$home
-    });
+    self.home = new Home(self.shortcuts, self.searchTools);
 
     self.shortcutDetails = new ShortcutDetails({
       $details: cfg.$details
     });
-
-    self.mininav.applyFilter = self.shortcuts.applyFilter;
 
     var routeRequest = function() {
       var frag = window.location.hash;
