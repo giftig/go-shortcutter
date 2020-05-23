@@ -80,7 +80,6 @@
     self.$box = $box;
 
     self.displayNotice = function(msg, type, mime) {
-      console.log(msg, type, mime);
       mime = mime || 'plain';
 
       if (mime === 'plain') {
@@ -107,19 +106,41 @@
     };
   };
 
-  var NewShortcuts = function(noticeHandler, nav, $box) {
+  var ShortcutList = function(noticeHandler, nav, $box) {
     var self = this;
     self.noticeHandler = noticeHandler;
     self.nav = nav;
     self.$box = $box;
 
+    self.keywordIndex = {};
+
     self.init = function() {
       Client.listShortcuts(
-        self.render,
+        self.shortcutsLoaded,
         function(response) {
           self.noticeHandler.displayError('Failed to load shortcut list!');
         }
       )
+    };
+
+    self.shortcutsLoaded = function(shortcuts) {
+      self.shortcuts = shortcuts;
+
+      self.buildIndex(self.shortcuts);
+      self.render(self.shortcuts);
+    };
+
+    self.buildIndex = function(shortcuts) {
+      var keywordIndex = {};
+
+      for (var i = 0; i < shortcuts.length; i++) {
+        var s = shortcuts[i];
+        var keywords = [s.id, s.url];
+        keywords.concat(s.tags);
+        keywordIndex[s.id] = keywords;
+      };
+
+      self.keywordIndex = keywordIndex;
     };
 
     self.render = function(shortcuts) {
@@ -132,7 +153,7 @@
 
       for (var i = 0; i < shortcuts.length; i++) {
         var s = shortcuts[i];
-        var $tr = $('<tr>');
+        var $tr = $('<tr>').attr('data-shortcut', s.id);
         var $shortcut = $('<td>').addClass('shortcut');
 
         var truncation = Utils.truncate(s.id);
@@ -155,18 +176,70 @@
             .text(Utils.truncate(s.url, URL_TRUNCATE_LENGTH).truncated)
         );
 
-        var $created = $('<td>').addClass('time').text(Utils.reformatDate(s.created_on));
+        var $modified = $('<td>').addClass('time').text(Utils.reformatDate(s.modified_on));
 
         $tr.html($shortcut);
         $tr.append($url);
-        $tr.append($created);
+        $tr.append($modified);
 
         $tbody.append($tr);
       }
 
       $table.html($tbody);
       self.$box.html($table);
-    }
+    };
+
+    // Hide rows which don't match the given regex in id, url, or tags fields
+    self.applyFilter = function(s) {
+      var r = new RegExp(s);
+      var $rows = self.$box.find('table tr');
+
+      $rows.each(function() {
+        var $this = $(this);
+        var id = $this.attr('data-shortcut');
+        var keywords = self.keywordIndex[id] || [];
+
+        var hasMatch = false;
+        for (var i = 0; i < keywords.length; i++) {
+          if (keywords[i].match(r)) {
+            hasMatch = true;
+            break;
+          }
+        }
+
+        if (hasMatch) {
+          $this.show();
+        } else {
+          $this.hide();
+        }
+      });
+    };
+
+    // Sort by the given shortcut attribute
+    self.sortRows = function(attr, reverse) {
+      attr = attr || 'id';
+      var reverseMod = reverse ? -1 : 1;
+
+      self.shortcuts.sort(function(s1, s2) {
+        if (s1[attr] < s2[attr]) {
+          return -1 * reverseMod;
+        }
+        if (s1[attr] > s2[attr]) {
+          return 1 * reverseMod;
+        }
+        return 0;
+      });
+
+      self.render(self.shortcuts);
+    };
+
+    self.sortAlphabetical = function() {
+      self.sortRows('id', false);
+    };
+
+    self.sortChronological = function() {
+      self.sortRows('modified_on', true);
+    };
   };
 
   var Nav = function($box) {
@@ -182,6 +255,7 @@
     var self = this;
     self.nav = nav;
     self.$box = $box;
+    self.applyFilter = function() {};
 
     self.render = function() {
       var $form = $('<form>').on('submit', function() {
@@ -189,11 +263,14 @@
         return false;
       });
 
-      $form.html('go/');
+      $form.html('/');
       $form.append(
         $('<input>')
           .attr('data-name', 'shortcut')
           .addClass('underline')
+          .on('input', function() {
+            self.applyFilter($(this).val());
+          })
           .attr('maxlength', 128)
       );
 
@@ -207,11 +284,11 @@
     self.nav = cfg.nav;
     self.mininav = cfg.mininav;
     self.noticeHandler = cfg.noticeHandler;
-    self.newShortcuts = cfg.newShortcuts;
+    self.shortcuts = cfg.shortcuts;
     self.$box = cfg.$home;
 
     self.render = function() {
-      self.newShortcuts.init();
+      self.shortcuts.init();
       self.mininav.render();
 
       $('section.content').hide();
@@ -237,19 +314,21 @@
     self.nav = new Nav();
     self.mininav = new MiniNav(self.nav, cfg.$miniNav);
     self.noticeHandler = new NoticeHandler(cfg.$notices);
-    self.newShortcuts = new NewShortcuts(self.noticeHandler, self.nav, cfg.$newShortcuts);
+    self.shortcuts = new ShortcutList(self.noticeHandler, self.nav, cfg.$shortcuts);
 
     self.home = new Home({
       nav: self.nav,
       mininav: self.mininav,
       noticeHandler: self.noticeHandler,
-      newShortcuts: self.newShortcuts,
+      shortcuts: self.shortcuts,
       $home: cfg.$home
     });
 
     self.shortcutDetails = new ShortcutDetails({
       $details: cfg.$details
     });
+
+    self.mininav.applyFilter = self.shortcuts.applyFilter;
 
     var routeRequest = function() {
       var frag = window.location.hash;
