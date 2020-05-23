@@ -14,9 +14,10 @@
         window.go = new Go({
           $notices: $('#message-box'),
           $shortcuts: $('.new-shortcuts .shortcuts-table'),
-          $miniNav: $('.shortcut-selector'),
+          $miniNav: $('#search-tools .filter'),
           $home: $('#home'),
-          $details: $('#details')
+          $details: $('#details'),
+          $sortTools: $('#search-tools .sort')
         });
         go.init();
       });
@@ -27,7 +28,15 @@
     <header><h1><a href="/">Go!</a></h1></header>
     <section id="home" class="content">
       <div id="message-box" class="box"></div>
-      <div class="shortcut-selector box"></div>
+      <div id="search-tools" class="box">
+        <span class="sort">
+          <button class="alpha plain">🔤</button>
+          <button class="chrono plain">🕟</button>
+        </span>
+        <span class="filter">
+          /<input class="underline" maxlength="128">
+        </span>
+      </div>
 
       <section class="new-shortcuts">
         <h2>Shortcuts</h2>

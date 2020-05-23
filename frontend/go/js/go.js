@@ -257,24 +257,10 @@
     self.$box = $box;
     self.applyFilter = function() {};
 
-    self.render = function() {
-      var $form = $('<form>').on('submit', function() {
-        self.nav.load(self.$box.find('[data-name="shortcut"]').val());
-        return false;
+    self.init = function() {
+      self.$box.find('input').on('input', function() {
+        self.applyFilter($(this).val());
       });
-
-      $form.html('/');
-      $form.append(
-        $('<input>')
-          .attr('data-name', 'shortcut')
-          .addClass('underline')
-          .on('input', function() {
-            self.applyFilter($(this).val());
-          })
-          .attr('maxlength', 128)
-      );
-
-      self.$box.html($form);
     };
   };
 
@@ -285,11 +271,13 @@
     self.mininav = cfg.mininav;
     self.noticeHandler = cfg.noticeHandler;
     self.shortcuts = cfg.shortcuts;
+    self.sortTools = cfg.sortTools;
     self.$box = cfg.$home;
 
     self.render = function() {
       self.shortcuts.init();
-      self.mininav.render();
+      self.mininav.init();
+      self.sortTools.init();
 
       $('section.content').hide();
       self.$box.show();
@@ -307,6 +295,21 @@
     };
   };
 
+  var SortTools = function(shortcuts, $box) {
+    var self = this;
+
+    self.$box = $box;
+    self.shortcuts = shortcuts;
+
+    self.init = function() {
+      var $alpha = self.$box.find('.alpha');
+      var $chrono = self.$box.find('.chrono');
+
+      $alpha.on('click', self.shortcuts.sortAlphabetical);
+      $chrono.on('click', self.shortcuts.sortChronological);
+    };
+  };
+
   var Go = function(cfg) {
     var self = this;
     cfg = cfg || {};
@@ -315,12 +318,14 @@
     self.mininav = new MiniNav(self.nav, cfg.$miniNav);
     self.noticeHandler = new NoticeHandler(cfg.$notices);
     self.shortcuts = new ShortcutList(self.noticeHandler, self.nav, cfg.$shortcuts);
+    self.sortTools = new SortTools(self.shortcuts, cfg.$sortTools);
 
     self.home = new Home({
       nav: self.nav,
       mininav: self.mininav,
       noticeHandler: self.noticeHandler,
       shortcuts: self.shortcuts,
+      sortTools: self.sortTools,
       $home: cfg.$home
     });
 

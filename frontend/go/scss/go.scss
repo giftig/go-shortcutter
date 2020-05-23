@@ -208,17 +208,21 @@ input[type="submit"].plain, input[type="button"].plain, button.plain {
   }
 }
 
-.shortcut-selector {
+#search-tools {
   position: fixed;
 
   right: 20px;
   top: 130px;
-  font-family: monospace;
-  font-size: 1.2em;
-  font-weight: bold;
-}
-input[data-name="shortcut"] {
-  margin-left: 5px;
+
+  .filter {
+    font-family: monospace;
+    font-size: 1.2em;
+    font-weight: bold;
+
+    input {
+      margin-left: 5px;
+    }
+  }
 }
 input.underline {
   border: none;
@@ -273,7 +277,7 @@ textarea.paste {
 }
 
 @media (max-width: 800px) {
-  .shortcut-selector {
+  #search-tools {
     left: 0px;
     width: 100%;
 
@@ -311,7 +315,7 @@ textarea.paste {
     }
   }
 
-  .shortcut-selector {
+  #search-tools {
     top: 70px !important;
   }
   section.content {
