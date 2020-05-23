@@ -32,7 +32,19 @@
       };
     },
     reformatDate: function(dt) {
-      return dt;
+      var _zeroPad = function(n) {
+        return n >= 10 ? n + '' : '0' + n;
+      };
+
+      var parsed = new Date(Date.parse(dt));
+      return (
+        parsed.getFullYear() + '-' +
+        _zeroPad(parsed.getMonth()) + '-' +
+        _zeroPad(parsed.getDate()) + ' ' +
+        _zeroPad(parsed.getHours()) + ':' +
+        _zeroPad(parsed.getMinutes()) + ':' +
+        _zeroPad(parsed.getSeconds())
+      );
     }
   };
 
