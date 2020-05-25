@@ -45,6 +45,19 @@ def update_shortcut(id):
         mimetype='text/plain'
     )
 
+@blueprint.route('/<id>', methods=('DELETE',))
+def delete_shortcut(id):
+    """Delete a shortcut"""
+    deleted = current_app.shortcut_backend.delete_shortcut(id)
+    status = 200 if deleted else 404
+    content = 'OK' if deleted else 'Not Found'
+
+    return current_app.response_class(
+        content,
+        status=status,
+        mimetype='text/plain'
+    )
+
 
 @blueprint.route('/', methods=('GET',))
 def list_shortcuts():

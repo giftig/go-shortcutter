@@ -70,3 +70,11 @@ class FileBackend(object):
         self.data[shortcut.id] = entry
         self._save_data()
         return exists
+
+    def delete_shortcut(self, id):
+        if id not in self.data:
+            return False
+
+        del self.data[id]
+        self._save_data()
+        return True

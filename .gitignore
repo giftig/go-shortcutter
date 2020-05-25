@@ -4,8 +4,8 @@
 
 # Python
 *.pyc
-/*.egg-info
-/dist
+/backend/*.egg-info
+/backend/dist
 
 # Log files
 *.log

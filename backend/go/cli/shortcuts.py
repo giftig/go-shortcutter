@@ -69,6 +69,13 @@ class ShortcutHandler(object):
             self._pprint(s)
             print('')
 
+    def delete_shortcut(self, id):
+        deleted = self.backend.delete_shortcut(id)
+        if not deleted:
+            raise ValueError('No such shortcut {}'.format(id))
+
+        print('Deleted {}'.format(id))
+
     def print_shortcut(self, id):
         shortcut = self._get_shortcut(id)
         self._pprint(shortcut)
@@ -94,7 +101,9 @@ def main():
         '-d', '--db', '--db-file', default=None, dest='db',
         help='The database file for the go shortcut engine'
     )
-    parser.add_argument('action', help='get, set, store, url, open, list')
+    parser.add_argument(
+        'action', help='get, set, store, url, open, list, delete'
+    )
     parser.add_argument(
         'id', default=None, nargs='?',
         help='The id of the shortcut to operate on'
@@ -122,6 +131,8 @@ def main():
             handler.open_url(args.id)
         elif args.action == 'list':
             handler.list_shortcuts()
+        elif args.action == 'delete':
+            handler.delete_shortcut(args.id)
         else:
             raise ValueError('Invalid action {}'.format(args.action))
     except Exception as e:
