@@ -87,6 +87,15 @@
         success: cb,
         error: onError || function() { return; }
       });
+    },
+    deleteShortcut: function(id, cb, onError) {
+      $.ajax({
+        url: 'go/shortcuts/' + shortcut.id,
+        type: 'DELETE',
+        dataType: 'text',
+        success: cb,
+        error: onError || function() { return; }
+      });
     }
   };
 
@@ -282,7 +291,7 @@
 
     $('body').on('click', function(e) {
       if (!self.$box.is(e.target) && !$.contains(self.$box[0], e.target)) {
-        self.$box.hide();
+        self.hide();
       }
     });
 
@@ -297,6 +306,11 @@
         // FIXME: Make this nicer
         return tags.join(', ');
       }
+    };
+
+    self.hide = function() {
+      window.location.hash = '#';
+      self.$box.hide();
     };
 
     self.load = function(id) {
