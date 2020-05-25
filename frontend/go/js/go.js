@@ -72,6 +72,17 @@
         success: cb,
         error: onError || function() { return; }
       });
+    },
+    writeShortcut: function(shortcut, cb, onError) {
+      $.ajax({
+        url: 'go/shortcuts/' + shortcut.id,
+        type: 'PUT',
+        contentType: 'application/json; charset=UTF-8',
+        dataType: 'json',
+        data: shortcut,
+        success: cb,
+        error: onError || function() { return; }
+      });
     }
   };
 

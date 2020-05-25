@@ -61,6 +61,7 @@ class FileBackend(object):
 
     def put_shortcut(self, shortcut):
         entry = self.data.get(shortcut.id)
+        exists = bool(entry)
         if entry:
             entry.update(shortcut)
         else:
@@ -68,3 +69,4 @@ class FileBackend(object):
 
         self.data[shortcut.id] = entry
         self._save_data()
+        return exists

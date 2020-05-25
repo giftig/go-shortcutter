@@ -35,8 +35,15 @@ def update_shortcut(id):
     if data.id != id:
         raise ValueError('Provided ID does not match payload')
 
-    current_app.shortcut_backend.put_shortcut(data)
-    return current_app.response_class('OK', mimetype='text/plain')
+    updated = current_app.shortcut_backend.put_shortcut(data)
+
+    status = 200 if updated else 201
+    content = 'OK' if updated else 'Created'
+    return current_app.response_class(
+        content,
+        status=status,
+        mimetype='text/plain'
+    )
 
 
 @blueprint.route('/', methods=('GET',))
