@@ -1,3 +1,6 @@
+$dark: #800000;
+$light: #ffc;
+
 body, head {
   margin: 0px;
   padding: 0px;
@@ -5,8 +8,8 @@ body, head {
 
 body {
   font-family: arial, sans-serif;
-  background-color: #FFFFCC;
-  color: #800000;
+  background-color: $light;
+  color: $dark;
 }
 
 header {
@@ -21,8 +24,8 @@ header {
   font-weight: bold;
   font-size: 1.1em;
 
-  background-color: #800000;
-  color: #FFFFCC;
+  background-color: $dark;
+  color: $light;
 
   &>h1 {
     text-align: center;
@@ -234,10 +237,11 @@ input.underline {
 }
 
 .rawtext {
-  background-color: #FFFFFF;
+  background-color: white;
   font-size: 1.2em;
   font-family: monospace;
 }
+
 h2.deleted {
   text-decoration: line-through;
 }
@@ -273,6 +277,29 @@ textarea.paste {
     max-height: 150px;
     max-width: 150px;
     margin: 0;
+  }
+}
+
+#info {
+  display: none;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  margin-left: -25%;
+  width: 50%;
+
+  background-color: $light;
+  border: 2px solid $dark;
+  padding: 20px;
+
+  table tr td {
+    padding-top: 5px;
+    padding-bottom: 5px;
+
+    &:first-child {
+      font-weight: bold;
+      padding-right: 20px;
+    }
   }
 }
 

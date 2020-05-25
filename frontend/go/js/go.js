@@ -15,6 +15,25 @@
   };
 
   var Utils = {
+    reformatDate: function(dt) {
+      var _zeroPad = function(n) {
+        return n >= 10 ? n + '' : '0' + n;
+      };
+
+      var parsed = new Date(Date.parse(dt));
+      return (
+        parsed.getFullYear() + '-' +
+        _zeroPad(parsed.getMonth()) + '-' +
+        _zeroPad(parsed.getDate()) + ' ' +
+        _zeroPad(parsed.getHours()) + ':' +
+        _zeroPad(parsed.getMinutes()) + ':' +
+        _zeroPad(parsed.getSeconds())
+      );
+    },
+    snakeToLabel: function(s) {
+      s = s.replace('_', ' ');
+      return s[0].toUpperCase() + s.slice(1);
+    },
     // Truncate a stirng to n chars by adding an ellipsis
     // Return a summary of the whole operation
     truncate: function(s, n) {
@@ -33,21 +52,6 @@
         truncated: truncated,
         isTruncated: isTruncated
       };
-    },
-    reformatDate: function(dt) {
-      var _zeroPad = function(n) {
-        return n >= 10 ? n + '' : '0' + n;
-      };
-
-      var parsed = new Date(Date.parse(dt));
-      return (
-        parsed.getFullYear() + '-' +
-        _zeroPad(parsed.getMonth()) + '-' +
-        _zeroPad(parsed.getDate()) + ' ' +
-        _zeroPad(parsed.getHours()) + ':' +
-        _zeroPad(parsed.getMinutes()) + ':' +
-        _zeroPad(parsed.getSeconds())
-      );
     }
   };
 
@@ -117,17 +121,22 @@
     };
   };
 
-  var ShortcutList = function(noticeHandler, nav, $box) {
+  var ShortcutList = function(noticeHandler, $box) {
     var self = this;
     self.noticeHandler = noticeHandler;
-    self.nav = nav;
     self.$box = $box;
+    self.showInfo = function() {};
 
     self.keywordIndex = {};
 
-    self.init = function() {
+    self.init = function(cb) {
+      cb = cb || function() {};
+
       Client.listShortcuts(
-        self.shortcutsLoaded,
+        function(shortcuts) {
+          self.shortcutsLoaded(shortcuts);
+          cb(shortcuts);
+        },
         function(response) {
           self.noticeHandler.displayError('Failed to load shortcut list!');
         }
@@ -139,6 +148,17 @@
 
       self.buildIndex(self.shortcuts);
       self.render(self.shortcuts);
+    };
+
+    self.byId = function(id) {
+      for (var i = 0; i < self.shortcuts.length; i++) {
+        var s = self.shortcuts[i];
+        if (s.id === id) {
+          return s;
+        }
+      }
+
+      return null;
     };
 
     self.buildIndex = function(shortcuts) {
@@ -173,8 +193,10 @@
         }
         $shortcut.html(
           $('<button>')
+            .attr('data-id', s.id)
             .on('click', function() {
-              nav.load(s.id);
+              self.showInfo($(this).attr('data-id'));
+              return false;
             })
             .text('go/' + truncation.truncated)
         );
@@ -253,12 +275,65 @@
     };
   };
 
-  var InfoBox = function($box) {
+  var InfoBox = function(shortcuts, $box) {
     var self = this;
+    self.shortcuts = shortcuts;
     self.$box = $box;
 
-    self.load = function(shortcut, onError) {
-      window.location.hash = '#/shortcut/' + shortcut;
+    $('body').on('click', function(e) {
+      if (!self.$box.is(e.target) && !$.contains(self.$box[0], e.target)) {
+        self.$box.hide();
+      }
+    });
+
+    // Functions to render specific properties of the shortcut as desired
+    var renderers = {
+      created_on: Utils.reformatDate,
+      modified_on: Utils.reformatDate,
+      url: function(url) {
+        return $('<a>').attr('href', url).text(url);
+      },
+      tags: function(tags) {
+        // FIXME: Make this nicer
+        return tags.join(', ');
+      }
+    };
+
+    self.load = function(id) {
+      window.location.hash = '#/shortcut/' + id;
+
+      var shortcut = self.shortcuts.byId(id);
+      if (!shortcut) {
+        return;
+      }
+      self.$box.html($('<h2>').text('go/' + shortcut.id));
+
+      var $t = $('<table>');
+
+      for (var k in shortcut) {
+        if (!shortcut.hasOwnProperty(k)) {
+          continue;
+        }
+        var v = shortcut[k];
+
+        if (!v) {
+          continue;
+        }
+
+        var label = Utils.snakeToLabel(k);
+
+        var $tr = $('<tr>');
+        var $label = $('<td>').text(label);
+        var render = renderers[k] || function(s) { return s; };
+        var rendered = render(shortcut[k]);
+        var $val = $('<td>').html($('<span>').addClass('rawtext').html(rendered));
+
+        $tr.html($label).append($val);
+        $t.append($tr);
+      }
+
+      self.$box.append($t);
+      self.$box.show();
     };
   };
 
@@ -268,21 +343,11 @@
     self.shortcuts = shortcuts;
     self.searchTools = searchTools;
 
-    self.render = function() {
-      self.shortcuts.init();
+    self.init = function(cb) {
+      self.shortcuts.init(cb);
       self.searchTools.init();
     };
-  };
 
-  var ShortcutDetails = function(cfg) {
-    var self = this;
-
-    self.$box = cfg.$details;
-
-    self.render = function() {
-      $('section.content').hide();
-      self.$box.show();
-    };
   };
 
   var SearchTools = function(shortcuts, $box) {
@@ -311,16 +376,13 @@
     var self = this;
     cfg = cfg || {};
 
-    self.infoBox = new InfoBox(cfg.$infoBox);
     self.noticeHandler = new NoticeHandler(cfg.$notices);
-    self.shortcuts = new ShortcutList(self.noticeHandler, self.nav, cfg.$shortcuts);
+    self.shortcuts = new ShortcutList(self.noticeHandler, cfg.$shortcuts);
+    self.infoBox = new InfoBox(self.shortcuts, cfg.$infoBox);
+    self.shortcuts.showInfo = self.infoBox.load;
     self.searchTools = new SearchTools(self.shortcuts, cfg.$searchTools);
 
     self.home = new Home(self.shortcuts, self.searchTools);
-
-    self.shortcutDetails = new ShortcutDetails({
-      $details: cfg.$details
-    });
 
     var routeRequest = function() {
       var frag = window.location.hash;
@@ -341,19 +403,21 @@
                 );
               }
 
-              self.home.render();
+              self.home.init();
             }
           );
           return;
         }
 
         if (frag.startsWith('#/shortcut/')) {
-          self.nav.load(frag.split('/')[2], self.home.render);
+          self.home.init(function() {
+            self.infoBox.load(frag.split('/')[2]);
+          });
           return;
         }
       }
 
-      self.home.render();
+      self.home.init();
     };
 
     self.init = routeRequest;
