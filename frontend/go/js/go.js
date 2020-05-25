@@ -49,7 +49,7 @@
     },
     deleteShortcut: function(id, cb, onError) {
       $.ajax({
-        url: 'go/shortcuts/' + shortcut.id,
+        url: 'go/shortcuts/' + id,
         type: 'DELETE',
         dataType: 'text',
         success: cb,
@@ -148,6 +148,22 @@
         function() {
           self.init()  // TODO: Be more incremental here
           self.noticeHandler.displaySuccess('Updated ' + shortcut.id);
+        },
+        function(response) {
+          self.noticeHandler.displayError(
+            'Unexpected error: ' + response.status + ' ' + response.statusText
+          );
+        }
+      );
+    };
+
+    self.deleteShortcut = function(id) {
+      // FIXME: Reuse code from writeShortcut
+      Client.deleteShortcut(
+        id,
+        function() {
+          self.init()  // TODO: Be more incremental here
+          self.noticeHandler.displaySuccess('Deleted ' + id);
         },
         function(response) {
           self.noticeHandler.displayError(
@@ -269,19 +285,6 @@
       }
     });
 
-    // Functions to render specific properties of the shortcut as desired
-    var renderers = {
-      created_on: Utils.reformatDate,
-      modified_on: Utils.reformatDate,
-      url: function(url) {
-        return $('<a>').attr('href', url).text(url);
-      },
-      tags: function(tags) {
-        // FIXME: Make this nicer
-        return tags.join(', ');
-      }
-    };
-
     self.hide = function() {
       window.location.hash = '#';
       self.$box.hide();
@@ -295,6 +298,13 @@
         return;
       }
       self.$box.html($('<h2>').text('go/' + shortcut.id));
+
+      var $discard = $('<button>').addClass('discard').text('🗑️');
+      $discard.click(function() {
+        // FIXME: Add a confirmation modal
+        self.shortcuts.deleteShortcut(id);
+      });
+      self.$box.append($discard);
 
       var $form = Forms.shortcut.render(shortcut, function(updated) {
         self.shortcuts.writeShortcut(updated);

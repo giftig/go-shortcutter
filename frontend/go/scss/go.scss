@@ -41,6 +41,16 @@ header {
   }
 }
 
+// Default buttons are just plain as I use a lot of icons
+button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-weight: bold;
+  font: inherit;
+}
+
 section.content {
   position: absolute;
   left: 50%;
@@ -74,17 +84,7 @@ section.content {
       padding-right: 5px;
     }
   }
-
-  .shortcuts-table button {
-    background: none;
-    border: none;
-    color: inherit;
-    cursor: pointer;
-    font-weight: bold;
-    font: inherit;
-  }
 }
-
 
 a:link, a:active, a:visited {
   text-decoration: none;
@@ -295,6 +295,13 @@ textarea.paste {
   border: 2px solid $dark;
   padding: 20px;
 
+  .discard {
+    font-size: 1.5em;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+
   table {
     width: 100%;
 
@@ -310,6 +317,10 @@ textarea.paste {
         }
       }
 
+      &.form-tools td {
+        padding-top: 10px;
+      }
+
       &:not(.form-tools) input {
         border: none;
         font-family: monospace;
@@ -318,16 +329,18 @@ textarea.paste {
     }
   }
 
-  button, input[type="button"], input[type="submit"] {
-    background: $light;
-    border: 1px solid $dark;
-    color: $dark;
-    padding: 3px 15px;
-    font-weight: bold;
+  form {
+    button, input[type="button"], input[type="submit"] {
+      background: $light;
+      border: 1px solid $dark;
+      color: $dark;
+      padding: 3px 15px;
+      font-weight: bold;
 
-    &[type="submit"] {
-      color: $green;
-      border-color: $green;
+      &[type="submit"] {
+        color: $green;
+        border-color: $green;
+      }
     }
   }
 
