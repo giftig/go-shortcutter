@@ -1,4 +1,4 @@
-(function($) {
+(function($, Utils, Forms) {
   var SHORTCUT_TRUNCATE_LENGTH = 16;
   var URL_TRUNCATE_LENGTH = 50;
 
@@ -11,47 +11,6 @@
         },
         onError
       );
-    }
-  };
-
-  var Utils = {
-    reformatDate: function(dt) {
-      var _zeroPad = function(n) {
-        return n >= 10 ? n + '' : '0' + n;
-      };
-
-      var parsed = new Date(Date.parse(dt));
-      return (
-        parsed.getFullYear() + '-' +
-        _zeroPad(parsed.getMonth()) + '-' +
-        _zeroPad(parsed.getDate()) + ' ' +
-        _zeroPad(parsed.getHours()) + ':' +
-        _zeroPad(parsed.getMinutes()) + ':' +
-        _zeroPad(parsed.getSeconds())
-      );
-    },
-    snakeToLabel: function(s) {
-      s = s.replace('_', ' ');
-      return s[0].toUpperCase() + s.slice(1);
-    },
-    // Truncate a stirng to n chars by adding an ellipsis
-    // Return a summary of the whole operation
-    truncate: function(s, n) {
-      n = n || SHORTCUT_TRUNCATE_LENGTH;
-
-      var isTruncated = false;
-      var truncated = s;
-
-      if (s.length > n) {
-        truncated = s.slice(0, n - 3) + '...';
-        isTruncated = true;
-      }
-
-      return {
-        full: s,
-        truncated: truncated,
-        isTruncated: isTruncated
-      };
     }
   };
 
@@ -82,8 +41,8 @@
         url: 'go/shortcuts/' + shortcut.id,
         type: 'PUT',
         contentType: 'application/json; charset=UTF-8',
-        dataType: 'json',
-        data: shortcut,
+        dataType: 'text',
+        data: JSON.stringify(shortcut),
         success: cb,
         error: onError || function() { return; }
       });
@@ -183,6 +142,21 @@
       self.keywordIndex = keywordIndex;
     };
 
+    self.writeShortcut = function(shortcut) {
+      Client.writeShortcut(
+        shortcut,
+        function() {
+          self.init()  // TODO: Be more incremental here
+          self.noticeHandler.displaySuccess('Updated ' + shortcut.id);
+        },
+        function(response) {
+          self.noticeHandler.displayError(
+            'Unexpected error: ' + response.status + ' ' + response.statusText
+          );
+        }
+      );
+    };
+
     self.render = function(shortcuts) {
       if (!shortcuts) {
         self.$box.text('No shortcuts exist yet.');
@@ -196,7 +170,7 @@
         var $tr = $('<tr>').attr('data-shortcut', s.id);
         var $shortcut = $('<td>').addClass('shortcut');
 
-        var truncation = Utils.truncate(s.id);
+        var truncation = Utils.truncate(s.id, SHORTCUT_TRUNCATE_LENGTH);
         if (truncation.isTruncated) {
           $shortcut.attr('title', 'go/' + s.id);
         }
@@ -322,31 +296,10 @@
       }
       self.$box.html($('<h2>').text('go/' + shortcut.id));
 
-      var $t = $('<table>');
-
-      for (var k in shortcut) {
-        if (!shortcut.hasOwnProperty(k)) {
-          continue;
-        }
-        var v = shortcut[k];
-
-        if (!v) {
-          continue;
-        }
-
-        var label = Utils.snakeToLabel(k);
-
-        var $tr = $('<tr>');
-        var $label = $('<td>').text(label);
-        var render = renderers[k] || function(s) { return s; };
-        var rendered = render(shortcut[k]);
-        var $val = $('<td>').html($('<span>').addClass('rawtext').html(rendered));
-
-        $tr.html($label).append($val);
-        $t.append($tr);
-      }
-
-      self.$box.append($t);
+      var $form = Forms.shortcut.render(shortcut, function(updated) {
+        self.shortcuts.writeShortcut(updated);
+      });
+      self.$box.append($form);
       self.$box.show();
     };
   };
@@ -438,4 +391,4 @@
   };
 
   window.Go = Go;
-})(jQuery);
+})(jQuery, Utils, Forms);

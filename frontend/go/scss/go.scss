@@ -1,6 +1,9 @@
 $dark: #800000;
 $light: #ffc;
 
+$green: #009000;
+$red: #f00;
+
 body, head {
   margin: 0px;
   padding: 0px;
@@ -194,16 +197,16 @@ input[type="submit"].plain, input[type="button"].plain, button.plain {
   }
 
   &[data-message-type="success"] {
-    border-color: #009000;
-    color: #009000;
+    border-color: $green;
+    color: $green;
 
     &:before {
       content: "SUCCESS";
     }
   }
   &[data-message-type="error"] {
-    border-color: #FF0000;
-    color: #FF0000;
+    border-color: $red;
+    color: $red;
 
     &:before {
       content: "ERROR";
@@ -292,15 +295,42 @@ textarea.paste {
   border: 2px solid $dark;
   padding: 20px;
 
-  table tr td {
-    padding-top: 5px;
-    padding-bottom: 5px;
+  table {
+    width: 100%;
 
-    &:first-child {
-      font-weight: bold;
-      padding-right: 20px;
+    tr {
+      td {
+        padding-top: 5px;
+        padding-bottom: 5px;
+
+        &:first-child {
+          font-weight: bold;
+          padding-right: 20px;
+          width: 20%;
+        }
+      }
+
+      &:not(.form-tools) input {
+        border: none;
+        font-family: monospace;
+        width: 100%;
+      }
     }
   }
+
+  button, input[type="button"], input[type="submit"] {
+    background: $light;
+    border: 1px solid $dark;
+    color: $dark;
+    padding: 3px 15px;
+    font-weight: bold;
+
+    &[type="submit"] {
+      color: $green;
+      border-color: $green;
+    }
+  }
+
 }
 
 @media (max-width: 800px) {
