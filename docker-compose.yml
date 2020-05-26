@@ -13,6 +13,6 @@ services:
     build: ./frontend
     image: giftig/go-static:2
     ports:
-      - 8080:80
+      - 80:80
     depends_on:
       - backend

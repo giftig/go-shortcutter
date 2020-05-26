@@ -139,13 +139,21 @@
   };
 
   var Forms = {};
-  Forms.shortcut = new Form([
-    new Field({id: 'id', label: 'Shortcut', widget: new Widgets.Text()}),
+  var uneditableIdField = new Field({id: 'id', label: 'Shortcut', widget: new Widgets.Text()});
+  var editableIdField = new Field({id: 'id', label: 'Shortcut', widget: new Widgets.TextInput(), validator: new Validators.MaxLength(64)});
+
+  var commonShortcutFields = [
     new Field({id: 'label', label: 'Label', widget: new Widgets.TextInput()}),
     new Field({id: 'url', label: 'URL', widget: new Widgets.TextInput(), validator: new Validators.MaxLength(1024)}),
+  ];
+  var updateShortcutFields = [uneditableIdField].concat(commonShortcutFields).concat([
     new Field({id: 'created_on', label: 'Created on', widget: Widgets.DISPLAY_DATE}),
     new Field({id: 'modified_on', label: 'Modified on', widget: Widgets.DISPLAY_DATE})
   ]);
+  var createShortcutFields = [editableIdField].concat(commonShortcutFields);
+
+  Forms.createShortcut = new Form(createShortcutFields);
+  Forms.updateShortcut = new Form(updateShortcutFields);
 
   window.Forms = Forms;
 })(jQuery, Utils);

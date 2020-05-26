@@ -306,7 +306,7 @@
       });
       self.$box.append($discard);
 
-      var $form = Forms.shortcut.render(shortcut, function(updated) {
+      var $form = Forms.updateShortcut.render(shortcut, function(updated) {
         self.shortcuts.writeShortcut(updated);
       });
       self.$box.append($form);
