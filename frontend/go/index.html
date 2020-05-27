@@ -18,7 +18,7 @@
           $shortcuts: $('.new-shortcuts .shortcuts-table'),
           $home: $('#home'),
           $infoBox: $('#info'),
-          $searchTools: $('#search-tools')
+          $shortcutTools: $('#shortcut-tools')
         });
         go.init();
       });
@@ -29,7 +29,10 @@
     <header><h1><a href="/">Go!</a></h1></header>
     <section id="home" class="content">
       <div id="message-box" class="box"></div>
-      <div id="search-tools" class="box">
+      <div id="shortcut-tools" class="box">
+        <span class="create">
+          <button class="add">+</button>
+        </span>
         <span class="sort">
           <button class="alpha plain">🔤</button>
           <button class="chrono plain">🕟</button>

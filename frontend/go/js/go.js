@@ -93,7 +93,7 @@
     var self = this;
     self.noticeHandler = noticeHandler;
     self.$box = $box;
-    self.showInfo = function() {};
+    self.infoBox = null;
 
     self.keywordIndex = {};
 
@@ -142,7 +142,7 @@
       self.keywordIndex = keywordIndex;
     };
 
-    self.writeShortcut = function(shortcut) {
+    var writeShortcut = function(shortcut) {
       Client.writeShortcut(
         shortcut,
         function() {
@@ -156,6 +156,18 @@
         }
       );
     };
+
+    self.createShortcut = function(shortcut) {
+      if (self.byId(shortcut.id)) {
+        self.noticeHandler.displayError('A shortcut with that name already exists; edit it instead.');
+        return false;
+      }
+
+      writeShortcut(shortcut);
+      return true;
+    };
+
+    self.updateShortcut = writeShortcut;
 
     self.deleteShortcut = function(id) {
       // FIXME: Reuse code from writeShortcut
@@ -173,11 +185,11 @@
       );
     };
 
-    self.render = function(shortcuts) {
+    var renderShortcutTable = function(shortcuts) {
       if (!shortcuts) {
-        self.$box.text('No shortcuts exist yet.');
-        return;
+        return $('<span>').text('No shortcuts exist yet');
       }
+
       var $table = $('<table>');
       var $tbody = $('<tbody>');
 
@@ -194,7 +206,9 @@
           $('<button>')
             .attr('data-id', s.id)
             .on('click', function() {
-              self.showInfo($(this).attr('data-id'));
+              if (self.infoBox) {
+                self.infoBox.loadEditShortcutForm(($(this).attr('data-id')));
+              }
               return false;
             })
             .text('go/' + truncation.truncated)
@@ -218,7 +232,11 @@
       }
 
       $table.html($tbody);
-      self.$box.html($table);
+      return $table;
+    };
+
+    self.render = function(shortcuts) {
+      self.$box.html(renderShortcutTable(shortcuts));
     };
 
     // Hide rows which don't match the given regex in id, url, or tags fields
@@ -290,7 +308,7 @@
       self.$box.hide();
     };
 
-    self.load = function(id) {
+    self.loadEditShortcutForm = function(id) {
       window.location.hash = '#/shortcut/' + id;
 
       var shortcut = self.shortcuts.byId(id);
@@ -307,39 +325,54 @@
       self.$box.append($discard);
 
       var $form = Forms.updateShortcut.render(shortcut, function(updated) {
-        self.shortcuts.writeShortcut(updated);
+        self.shortcuts.updateShortcut(updated);
       });
       self.$box.append($form);
       self.$box.show();
     };
+
+    self.loadCreateShortcutForm = function() {
+      var $form = Forms.createShortcut.render({}, function(newShortcut) {
+        self.shortcuts.createShortcut(newShortcut);
+      });
+      self.$box.html($form);
+      self.$box.show();
+    };
   };
 
-  var Home = function(shortcuts, searchTools) {
+  var Home = function(shortcuts, shortcutTools) {
     var self = this;
 
     self.shortcuts = shortcuts;
-    self.searchTools = searchTools;
+    self.shortcutTools = shortcutTools;
 
     self.init = function(cb) {
       self.shortcuts.init(cb);
-      self.searchTools.init();
+      self.shortcutTools.init();
     };
 
   };
 
-  var SearchTools = function(shortcuts, $box) {
+  var ShortcutTools = function(shortcuts, infoBox, $box) {
     var self = this;
 
     self.$box = $box;
     self.shortcuts = shortcuts;
+    self.infoBox = infoBox;
 
+    self.$create = self.$box.find('.create');
     self.$sort = self.$box.find('.sort');
     self.$filter = self.$box.find('.filter');
 
     self.init = function() {
+      var $add = self.$create.find('.add');
       var $alpha = self.$sort.find('.alpha');
       var $chrono = self.$sort.find('.chrono');
 
+      $add.on('click', function() {
+        self.infoBox.loadCreateShortcutForm();
+        return false;
+      });
       $alpha.on('click', self.shortcuts.sortAlphabetical);
       $chrono.on('click', self.shortcuts.sortChronological);
 
@@ -356,10 +389,10 @@
     self.noticeHandler = new NoticeHandler(cfg.$notices);
     self.shortcuts = new ShortcutList(self.noticeHandler, cfg.$shortcuts);
     self.infoBox = new InfoBox(self.shortcuts, cfg.$infoBox);
-    self.shortcuts.showInfo = self.infoBox.load;
-    self.searchTools = new SearchTools(self.shortcuts, cfg.$searchTools);
+    self.shortcuts.infoBox = self.infoBox;
+    self.shortcutTools = new ShortcutTools(self.shortcuts, self.infoBox, cfg.$shortcutTools);
 
-    self.home = new Home(self.shortcuts, self.searchTools);
+    self.home = new Home(self.shortcuts, self.shortcutTools);
 
     var routeRequest = function() {
       var frag = window.location.hash;

@@ -96,7 +96,6 @@ a:hover {
   text-decoration: underline;
 }
 
-
 section.new-shortcuts, section.new-pastes {
   table {
     font-family: monospace;
@@ -214,11 +213,18 @@ input[type="submit"].plain, input[type="button"].plain, button.plain {
   }
 }
 
-#search-tools {
+#shortcut-tools {
   position: fixed;
 
   right: 20px;
   top: 130px;
+
+  .add {
+    color: $green;
+    font-size: 2em;
+    font-weight: bold;
+    vertical-align: sub;
+  }
 
   .filter {
     font-family: monospace;
@@ -326,6 +332,17 @@ textarea.paste {
         font-family: monospace;
         width: 100%;
       }
+
+      &[data-field="id"] td:last-child input {
+        border: none;
+        background: none;
+        border-bottom: 1px solid #800000;
+        color: #800000;
+
+        &:before {
+          content: "go/";
+        }
+      }
     }
   }
 
@@ -347,7 +364,7 @@ textarea.paste {
 }
 
 @media (max-width: 800px) {
-  #search-tools {
+  #shortcut-tools {
     left: 0px;
     width: 100%;
 
@@ -385,7 +402,7 @@ textarea.paste {
     }
   }
 
-  #search-tools {
+  #shortcut-tools {
     top: 70px !important;
   }
   section.content {

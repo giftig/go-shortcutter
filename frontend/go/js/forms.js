@@ -98,7 +98,7 @@
         var initialValue = data[f.id];
         var $widgets = f.render(initialValue);
 
-        var $tr = $('<tr>');
+        var $tr = $('<tr>').attr('data-field', f.id);
         var $label = $('<td>').html($widgets[0]);
         var $value = $('<td>').html($widgets[1]);
 
