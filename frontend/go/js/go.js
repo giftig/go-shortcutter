@@ -134,8 +134,7 @@
 
       for (var i = 0; i < shortcuts.length; i++) {
         var s = shortcuts[i];
-        var keywords = [s.id, s.url];
-        keywords.concat(s.tags);
+        var keywords = [s.id, s.url].concat(s.tags);
         keywordIndex[s.id] = keywords;
       };
 
@@ -420,7 +419,7 @@
 
         if (frag.startsWith('#/shortcut/')) {
           self.home.init(function() {
-            self.infoBox.load(frag.split('/')[2]);
+            self.infoBox.loadEditShortcutForm(frag.split('/')[2]);
           });
           return;
         }

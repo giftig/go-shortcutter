@@ -38,6 +38,21 @@
     self.reset = function() {};
   };
 
+  Widgets.CsvList = function() {
+    var self = this;
+
+    self.render = function(initial) {
+      initial = initial || [];
+      self.$w = $('<input>').addClass('csvlist').val(initial.join(','));
+
+      return self.$w;
+    };
+
+    self.value = function() {
+      return self.$w.val().split(',');
+    };
+  };
+
   Widgets.DISPLAY_DATE = new Widgets.Text(Utils.reformatDate);
 
   var Validators = {};
@@ -51,7 +66,37 @@
       return v;
     };
   };
+
+  Validators.EachItem = function(subvalidator) {
+    var self = this;
+
+    self.clean = function(v) {
+      var res = [];
+
+      for (var i = 0; i < v.length; i++) {
+        res.push(subvalidator.clean(v[i]));
+      }
+
+      return res;
+    };
+  };
+
+  Validators.Multiple = function(validators) {
+    var self = this;
+
+    self.clean = function(v) {
+      var nextValue = v;
+
+      for (var i = 0; i < validators.length; i++) {
+        nextValue = validators[i].clean(nextValue);
+      }
+
+      return nextValue;
+    };
+  };
+
   Validators.NOOP = {clean: function(v) { return v; }};
+  Validators.STRIP_WHITESPACE = {clean: function(v) { return v.trim(); }};
 
 
   var Field = function(cfg) {
@@ -140,12 +185,34 @@
 
   var Forms = {};
   var uneditableIdField = new Field({id: 'id', label: 'Shortcut', widget: new Widgets.Text()});
-  var editableIdField = new Field({id: 'id', label: 'Shortcut', widget: new Widgets.TextInput(), validator: new Validators.MaxLength(64)});
+  var editableIdField = new Field({
+    id: 'id',
+    label: 'Shortcut',
+    widget: new Widgets.TextInput(),
+    validator: new Validators.MaxLength(64)
+  });
 
   var commonShortcutFields = [
     new Field({id: 'label', label: 'Label', widget: new Widgets.TextInput()}),
-    new Field({id: 'url', label: 'URL', widget: new Widgets.TextInput(), validator: new Validators.MaxLength(1024)}),
+    new Field({
+      id: 'url',
+      label: 'URL',
+      widget: new Widgets.TextInput(),
+      validator: new Validators.MaxLength(1024)
+    }),
+    new Field({
+      id: 'tags',
+      label: 'Tags',
+      widget: new Widgets.CsvList(),
+      validator: new Validators.EachItem(
+        new Validators.Multiple([
+          new Validators.MaxLength(64),
+          Validators.STRIP_WHITESPACE
+        ])
+      )
+    })
   ];
+
   var updateShortcutFields = [uneditableIdField].concat(commonShortcutFields).concat([
     new Field({id: 'created_on', label: 'Created on', widget: Widgets.DISPLAY_DATE}),
     new Field({id: 'modified_on', label: 'Modified on', widget: Widgets.DISPLAY_DATE})
