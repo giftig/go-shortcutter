@@ -318,8 +318,7 @@
       self.$box.html($('<h2>').text('go/' + shortcut.id));
 
       var $discard = $('<button>').addClass('discard').text('🗑️');
-      $discard.click(function() {
-        // FIXME: Add a confirmation modal
+      $discard.on('dblclick', function() {
         self.shortcuts.deleteShortcut(id);
       });
       self.$box.append($discard);
