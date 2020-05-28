@@ -1,6 +1,6 @@
 (function($, Utils, Forms) {
   var SHORTCUT_TRUNCATE_LENGTH = 16;
-  var URL_TRUNCATE_LENGTH = 50;
+  var URL_TRUNCATE_LENGTH = 40;
 
   var Redirector = {
     redirect: function(target, onError) {
