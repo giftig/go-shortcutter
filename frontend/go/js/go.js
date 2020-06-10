@@ -96,6 +96,7 @@
     self.infoBox = null;
 
     self.keywordIndex = {};
+    self.knownTags = [];
 
     self.init = function(cb) {
       cb = cb || function() {};
@@ -136,7 +137,16 @@
         var s = shortcuts[i];
         var keywords = [s.id, s.url].concat(s.tags);
         keywordIndex[s.id] = keywords;
+
+        for (var j = 0; j < s.tags.length; j++) {
+          var t = s.tags[j];
+          if (self.knownTags.indexOf(t) === -1) {
+            self.knownTags.push(t);
+          }
+        }
       };
+
+      self.knownTags.sort();
 
       self.keywordIndex = keywordIndex;
     };
