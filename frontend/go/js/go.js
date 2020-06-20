@@ -402,12 +402,43 @@
 
     self.home = new Home(self.shortcuts, self.shortcutTools);
 
+    /**
+     * Bind some keys to shortcut functions while not entering text
+     */
+    var handleShortcuts = function(e) {
+      if (e.key === 'Escape') {
+        self.infoBox.hide();
+        document.activeElement.blur();
+        return;
+      }
+
+      if ($(e.target).is('input')) {
+        return;
+      }
+
+      if (e.key === 'a') {
+        self.infoBox.loadCreateShortcutForm();
+        return;
+      }
+
+      if (e.key === '/') {
+        self.shortcutTools.$filter.find('input').focus();
+        e.preventDefault();
+        return;
+      }
+
+    };
+
+    var bindShortcuts = function() {
+      $(document).on('keydown', handleShortcuts);
+    };
+
     var routeRequest = function() {
       var frag = window.location.hash;
 
       if (frag) {
         if (frag.startsWith('#/go/')) {
-          var shortcut = frag.split('/')[2]
+          var shortcut = frag.split('/')[2];
           Redirector.redirect(
             shortcut,
             function(response) {
@@ -428,6 +459,7 @@
         }
 
         if (frag.startsWith('#/shortcut/')) {
+          bindShortcuts();
           self.home.init(function() {
             self.infoBox.loadEditShortcutForm(frag.split('/')[2]);
           });
@@ -435,6 +467,7 @@
         }
       }
 
+      bindShortcuts();
       self.home.init();
     };
 
