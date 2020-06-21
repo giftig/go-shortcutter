@@ -17,3 +17,4 @@ css
 
 # Project files
 /.go
+*.min.js
