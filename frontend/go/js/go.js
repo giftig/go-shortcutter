@@ -337,6 +337,7 @@
       });
       self.$box.append($form);
       self.$box.show();
+      self.$box.find('[data-field="url"] input').focus();
     };
 
     self.loadCreateShortcutForm = function() {
@@ -345,6 +346,7 @@
       });
       self.$box.html($form);
       self.$box.show();
+      self.$box.find('[data-field="id"] input').focus();
     };
   };
 
@@ -418,13 +420,13 @@
 
       if (e.key === 'a') {
         self.infoBox.loadCreateShortcutForm();
-        return;
+        return false;
       }
 
       if (e.key === '/') {
         self.shortcutTools.$filter.find('input').focus();
         e.preventDefault();
-        return;
+        return false;
       }
 
     };
