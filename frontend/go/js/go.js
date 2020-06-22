@@ -357,8 +357,12 @@
     self.shortcutTools = shortcutTools;
 
     self.init = function(cb) {
-      self.shortcuts.init(cb);
-      self.shortcutTools.init();
+      self.shortcuts.init(function() {
+        if (cb) {
+          cb();
+        }
+        self.shortcutTools.init();
+      });
     };
 
   };
@@ -386,9 +390,12 @@
       $alpha.on('click', self.shortcuts.sortAlphabetical);
       $chrono.on('click', self.shortcuts.sortChronological);
 
-      self.$filter.find('input').on('input', function() {
+      var $filterBox = self.$filter.find('input');
+      $filterBox.on('input', function() {
         self.shortcuts.applyFilter($(this).val());
       });
+
+      self.shortcuts.applyFilter($filterBox.val());
     };
   };
 
