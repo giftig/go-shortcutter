@@ -3,11 +3,13 @@
   "version": "0.0.1",
   "dependencies": {
     "@yaireo/tagify": "^3.11.3",
-    "jquery": "3.5.1"
+    "jquery": "3.5.1",
+    "js-md5": "^0.7.3"
   },
   "scripts": {
-    "build:jquery": "cp node_modules/jquery/dist/jquery.min.js go/js/",
-    "build:tagify": "cp node_modules/@yaireo/tagify/dist/tagify.min.js go/js/tagify.min.js",
+    "build:md5": "mkdir -p go/js/lib && cp node_modules/js-md5/src/md5.js go/js/lib/",
+    "build:jquery": "mkdir -p go/js/lib && cp node_modules/jquery/dist/jquery.min.js go/js/lib/",
+    "build:tagify": "mkdir -p go/js/lib && cp node_modules/@yaireo/tagify/dist/tagify.min.js go/js/lib/tagify.min.js",
     "build:sass": "npm run sass",
     "build": "npm-run-all -p build:*",
     "sass": "node-sass scss -o go/css/",

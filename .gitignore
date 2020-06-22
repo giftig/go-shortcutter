@@ -17,4 +17,5 @@ css
 
 # Project files
 /.go
+/frontend/go/js/lib/*
 *.min.js

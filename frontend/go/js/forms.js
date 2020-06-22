@@ -1,4 +1,4 @@
-(function($, Utils) {
+(function($, Utils, Tagify) {
 
   var Widgets = {};
 
@@ -50,6 +50,36 @@
 
     self.value = function() {
       return self.$w.val().split(',');
+    };
+  };
+
+  Widgets.TagList = function() {
+    var self = this;
+
+    self.render = function(initial) {
+      initial = initial || [];
+      self.$wrapper = $('<span>').addClass('taglist');
+      self.$widget = $('<input>').val(JSON.stringify(initial));
+      self.$wrapper.html(self.$widget);
+
+      self.tagify = new Tagify(
+        self.$widget[0],
+        {
+          placeholder: 'Tags',
+          whitelist: Utils.getTags(),
+          transformTag: function(data) {
+            data.style = '--tag-bg:' + Utils.createColour(data.value);
+          }
+        }
+      );
+
+      return self.$wrapper;
+    };
+
+    self.value = function() {
+      return self.tagify.value.map(function(v) {
+        return v.value;
+      });
     };
   };
 
@@ -203,7 +233,7 @@
     new Field({
       id: 'tags',
       label: 'Tags',
-      widget: new Widgets.CsvList(),
+      widget: new Widgets.TagList(),
       validator: new Validators.EachItem(
         new Validators.Multiple([
           new Validators.MaxLength(64),
@@ -223,4 +253,4 @@
   Forms.updateShortcut = new Form(updateShortcutFields);
 
   window.Forms = Forms;
-})(jQuery, Utils);
+})(jQuery, Utils, Tagify);

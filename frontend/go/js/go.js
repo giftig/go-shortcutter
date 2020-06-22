@@ -148,6 +148,11 @@
 
       self.knownTags.sort();
 
+      // FIXME: This is a pretty nasty hack
+      Utils.getTags = function() {
+        return self.knownTags;
+      };
+
       self.keywordIndex = keywordIndex;
     };
 
@@ -307,7 +312,11 @@
     self.$box = $box;
 
     $('body').on('click', function(e) {
-      if (!self.$box.is(e.target) && !$.contains(self.$box[0], e.target)) {
+      if (
+        !self.$box.is(e.target) &&
+        !$.contains(self.$box[0], e.target) &&
+        $.contains(document, e.target)
+      ) {
         self.hide();
       }
     });
@@ -421,7 +430,9 @@
         return;
       }
 
-      if ($(e.target).is('input')) {
+      var $target = $(e.target);
+
+      if ($target.is('input') || $target.is('form *')) {
         return;
       }
 
