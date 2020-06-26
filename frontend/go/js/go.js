@@ -2,6 +2,27 @@
   var SHORTCUT_TRUNCATE_LENGTH = 16;
   var URL_TRUNCATE_LENGTH = 40;
 
+  // Pubsub system for basic interface events
+  var EventBus = {
+    subscribers: [],
+    subscribe: function(eventName, f) {
+      if (!EventBus.subscribers[eventName]) {
+        EventBus.subscribers[eventName] = [f];
+      } else {
+        EventBus.subscribers[eventName].push(f);
+      }
+    },
+    fireEvent: function(eventName, args) {
+      var subs = EventBus.subscribers[eventName] || [];
+
+      for (var i = 0; i < subs.length; i++) {
+        subs[i](args);
+      }
+    },
+    SHORTCUTS_LOADED: 'shortcutsLoaded',
+    KEYWORDS_INDEXED: 'keywordsIndexed'
+  };
+
   var Redirector = {
     redirect: function(target, onError) {
       Client.getUrl(
@@ -117,6 +138,8 @@
 
       self.buildIndex(self.shortcuts);
       self.render(self.shortcuts);
+
+      EventBus.fireEvent(EventBus.SHORTCUTS_LOADED, shortcuts);
     };
 
     self.byId = function(id) {
@@ -389,6 +412,12 @@
     self.$sort = self.$box.find('.sort');
     self.$filter = self.$box.find('.filter');
 
+    var isSubscribed = false;
+
+    var onShortcutsLoaded = function() {
+      self.shortcuts.applyFilter(self.$filter.find('input').val());
+    };
+
     self.init = function() {
       var $add = self.$create.find('.add');
       var $alpha = self.$sort.find('.alpha');
@@ -406,7 +435,10 @@
         self.shortcuts.applyFilter($(this).val());
       });
 
-      self.shortcuts.applyFilter($filterBox.val());
+      if (!isSubscribed) {
+        EventBus.subscribe(EventBus.SHORTCUTS_LOADED, onShortcutsLoaded);
+        isSubscribed = true;
+      }
     };
   };
 
