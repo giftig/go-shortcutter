@@ -322,7 +322,9 @@
     });
 
     self.hide = function() {
-      window.location.hash = '#';
+      if (window.location.hash.startsWith('#/shortcut')) {
+        window.location.hash = '#/';
+      }
       self.$box.hide();
     };
 
