@@ -53,8 +53,9 @@
     };
   };
 
-  Widgets.TagList = function() {
+  Widgets.TagList = function(fetchTags) {
     var self = this;
+    fetchTags = fetchTags || function() { return []; };
 
     self.render = function(initial) {
       initial = initial || [];
@@ -66,7 +67,7 @@
         self.$widget[0],
         {
           placeholder: 'Tags',
-          whitelist: Utils.getTags(),
+          whitelist: fetchTags(),
           transformTag: function(data) {
             data.style = '--tag-bg:' + Utils.createColour(data.value);
           }
@@ -214,6 +215,10 @@
   };
 
   var Forms = {};
+
+  // Will be populated in response to notifiers
+  var registeredKeywords = [];
+
   var uneditableIdField = new Field({id: 'id', label: 'Shortcut', widget: new Widgets.Text()});
   var editableIdField = new Field({
     id: 'id',
@@ -233,7 +238,7 @@
     new Field({
       id: 'tags',
       label: 'Tags',
-      widget: new Widgets.TagList(),
+      widget: new Widgets.TagList(function() { return registeredKeywords; }),
       validator: new Validators.EachItem(
         new Validators.Multiple([
           new Validators.MaxLength(64),
@@ -251,6 +256,9 @@
 
   Forms.createShortcut = new Form(createShortcutFields);
   Forms.updateShortcut = new Form(updateShortcutFields);
+  Forms.onKeywordsIndexed = function(keywords) {
+    registeredKeywords = keywords;
+  };
 
   window.Forms = Forms;
 })(jQuery, Utils, Tagify);

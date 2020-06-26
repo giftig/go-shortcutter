@@ -170,11 +170,7 @@
       };
 
       self.knownTags.sort();
-
-      // FIXME: This is a pretty nasty hack
-      Utils.getTags = function() {
-        return self.knownTags;
-      };
+      EventBus.fireEvent(EventBus.KEYWORDS_INDEXED, self.knownTags);
 
       self.keywordIndex = keywordIndex;
     };
@@ -453,6 +449,10 @@
     self.shortcutTools = new ShortcutTools(self.shortcuts, self.infoBox, cfg.$shortcutTools);
 
     self.home = new Home(self.shortcuts, self.shortcutTools);
+
+    if (cfg.onKeywordsIndexed) {
+      EventBus.subscribe(EventBus.KEYWORDS_INDEXED, cfg.onKeywordsIndexed);
+    }
 
     /**
      * Bind some keys to shortcut functions while not entering text
