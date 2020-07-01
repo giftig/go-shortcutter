@@ -2,7 +2,7 @@
   "name": "go-shortcutter",
   "version": "0.0.1",
   "dependencies": {
-    "@yaireo/tagify": "^3.11.3",
+    "@yaireo/tagify": "^3.12.0",
     "jquery": "3.5.1",
     "js-md5": "^0.7.3"
   },
