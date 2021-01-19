@@ -17,7 +17,7 @@
       var parsed = new Date(Date.parse(dt));
       return (
         parsed.getFullYear() + '-' +
-        _zeroPad(parsed.getMonth()) + '-' +
+        _zeroPad(parsed.getMonth() + 1) + '-' +
         _zeroPad(parsed.getDate()) + ' ' +
         _zeroPad(parsed.getHours()) + ':' +
         _zeroPad(parsed.getMinutes()) + ':' +

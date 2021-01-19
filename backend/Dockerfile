@@ -5,7 +5,7 @@ COPY . /usr/src/app
 
 EXPOSE 8080
 
-VOLUME /usr/src/sb
+VOLUME /usr/src/db
 
 RUN pip install --no-cache .
 
