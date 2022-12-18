@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 
 from go import serialisation
 
@@ -52,9 +51,21 @@ class FileBackend(object):
     def get_shortcut(self, id):
         return self.data.get(id)
 
-    def list_shortcuts(self):
+    def list_shortcuts(self, tags=None):
+        """
+        List shortcuts, optionally filtered by tags
+
+        Tags must be a set
+        """
+        values = self.data.values()
+        filtered = (
+            values if not tags else [
+                v for v in values if set(v.tags).intersection(tags) == tags
+            ]
+        )
+
         return sorted(
-            self.data.values(),
+            filtered,
             key=lambda k: k.created_on,
             reverse=True
         )

@@ -1,6 +1,5 @@
 from flask import abort
 from flask import Blueprint
-from flask import Response
 from flask import current_app
 from flask import jsonify
 from flask import request
@@ -16,7 +15,7 @@ def get_shortcut(id):
     shortcut = current_app.shortcut_backend.get_shortcut(id)
 
     if not shortcut:
-       abort(404, description='No such shortcut')
+        abort(404, description='No such shortcut')
 
     if request.args.get('url') == 'true':
         return current_app.response_class(shortcut.url, mimetype='text/plain')
@@ -45,6 +44,7 @@ def update_shortcut(id):
         mimetype='text/plain'
     )
 
+
 @blueprint.route('/<id>', methods=('DELETE',))
 def delete_shortcut(id):
     """Delete a shortcut"""
@@ -61,7 +61,11 @@ def delete_shortcut(id):
 
 @blueprint.route('/', methods=('GET',))
 def list_shortcuts():
+    tags = request.args.getlist('tag', None)
+    if tags:
+        tags = set(tags)
+
     return jsonify([
         serialisation.write_shortcut(s)
-        for s in current_app.shortcut_backend.list_shortcuts()
+        for s in current_app.shortcut_backend.list_shortcuts(tags=tags)
     ])
