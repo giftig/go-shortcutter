@@ -14,5 +14,7 @@ services:
     image: giftig/go-static:latest
     ports:
       - 80:80
+    volumes:
+      - ./frontend/go:/etc/nginx/html
     depends_on:
       - backend

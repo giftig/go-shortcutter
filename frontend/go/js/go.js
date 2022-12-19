@@ -1,9 +1,9 @@
 (function($, Utils, Forms) {
-  var SHORTCUT_TRUNCATE_LENGTH = 16;
-  var URL_TRUNCATE_LENGTH = 40;
+  const SHORTCUT_TRUNCATE_LENGTH = 16;
+  const URL_TRUNCATE_LENGTH = 40;
 
   // Pubsub system for basic interface events
-  var EventBus = {
+  const EventBus = {
     subscribers: [],
     subscribe: function(eventName, f) {
       if (!EventBus.subscribers[eventName]) {
@@ -13,9 +13,9 @@
       }
     },
     fireEvent: function(eventName, args) {
-      var subs = EventBus.subscribers[eventName] || [];
+      const subs = EventBus.subscribers[eventName] || [];
 
-      for (var i = 0; i < subs.length; i++) {
+      for (let i = 0; i < subs.length; i++) {
         subs[i](args);
       }
     },
@@ -23,7 +23,7 @@
     KEYWORDS_INDEXED: 'keywordsIndexed'
   };
 
-  var Redirector = {
+  const Redirector = {
     redirect: function(target, onError) {
       Client.getUrl(
         target,
@@ -35,9 +35,9 @@
     }
   };
 
-  var Client = {
+  const Client = {
     getUrl: function(shortcut, cb, onError) {
-      var clientUrl = '/go/shortcuts/' + shortcut;
+      const clientUrl = '/go/shortcuts/' + shortcut;
 
       $.ajax({
         url: clientUrl,
@@ -79,8 +79,8 @@
     }
   };
 
-  var NoticeHandler = function($box) {
-    var self = this;
+  const NoticeHandler = function($box) {
+    const self = this;
     self.$box = $box;
 
     self.displayNotice = function(msg, type, mime) {
@@ -110,8 +110,8 @@
     };
   };
 
-  var ShortcutList = function(noticeHandler, $box) {
-    var self = this;
+  const ShortcutList = function(noticeHandler, $box) {
+    const self = this;
     self.noticeHandler = noticeHandler;
     self.$box = $box;
     self.infoBox = null;
@@ -143,8 +143,8 @@
     };
 
     self.byId = function(id) {
-      for (var i = 0; i < self.shortcuts.length; i++) {
-        var s = self.shortcuts[i];
+      for (let i = 0; i < self.shortcuts.length; i++) {
+        const s = self.shortcuts[i];
         if (s.id === id) {
           return s;
         }
@@ -154,15 +154,15 @@
     };
 
     self.buildIndex = function(shortcuts) {
-      var keywordIndex = {};
+      const keywordIndex = {};
 
-      for (var i = 0; i < shortcuts.length; i++) {
-        var s = shortcuts[i];
-        var keywords = [s.id, s.url].concat(s.tags);
+      for (let i = 0; i < shortcuts.length; i++) {
+        const s = shortcuts[i];
+        const keywords = [s.id, s.url].concat(s.tags);
         keywordIndex[s.id] = keywords;
 
-        for (var j = 0; j < s.tags.length; j++) {
-          var t = s.tags[j];
+        for (let j = 0; j < s.tags.length; j++) {
+          const t = s.tags[j];
           if (self.knownTags.indexOf(t) === -1) {
             self.knownTags.push(t);
           }
@@ -175,7 +175,7 @@
       self.keywordIndex = keywordIndex;
     };
 
-    var writeShortcut = function(shortcut) {
+    const writeShortcut = function(shortcut) {
       Client.writeShortcut(
         shortcut,
         function() {
@@ -218,20 +218,20 @@
       );
     };
 
-    var renderShortcutTable = function(shortcuts) {
+    const renderShortcutTable = function(shortcuts) {
       if (!shortcuts) {
         return $('<span>').text('No shortcuts exist yet');
       }
 
-      var $table = $('<table>');
-      var $tbody = $('<tbody>');
+      const $table = $('<table>');
+      const $tbody = $('<tbody>');
 
-      for (var i = 0; i < shortcuts.length; i++) {
-        var s = shortcuts[i];
-        var $tr = $('<tr>').attr('data-shortcut', s.id);
-        var $shortcut = $('<td>').addClass('shortcut');
+      for (let i = 0; i < shortcuts.length; i++) {
+        const s = shortcuts[i];
+        const $tr = $('<tr>').attr('data-shortcut', s.id);
+        const $shortcut = $('<td>').addClass('shortcut');
 
-        var truncation = Utils.truncate(s.id, SHORTCUT_TRUNCATE_LENGTH);
+        const truncation = Utils.truncate(s.id, SHORTCUT_TRUNCATE_LENGTH);
         if (truncation.isTruncated) {
           $shortcut.attr('title', 'go/' + s.id);
         }
@@ -247,7 +247,7 @@
             .text('go/' + truncation.truncated)
         );
 
-        var $url = $('<td>').addClass('url');
+        const $url = $('<td>').addClass('url');
         $url.html(
           $('<a>')
             .attr('href', s.url)
@@ -255,7 +255,7 @@
             .text(Utils.truncate(s.url, URL_TRUNCATE_LENGTH).truncated)
         );
 
-        var $modified = $('<td>').addClass('time').text(Utils.reformatDate(s.modified_on));
+        const $modified = $('<td>').addClass('time').text(Utils.reformatDate(s.modified_on));
 
         $tr.html($shortcut);
         $tr.append($url);
@@ -274,16 +274,16 @@
 
     // Hide rows which don't match the given regex in id, url, or tags fields
     self.applyFilter = function(s) {
-      var r = new RegExp(s);
-      var $rows = self.$box.find('table tr');
+      const r = new RegExp(s);
+      const $rows = self.$box.find('table tr');
 
       $rows.each(function() {
-        var $this = $(this);
-        var id = $this.attr('data-shortcut');
-        var keywords = self.keywordIndex[id] || [];
+        const $this = $(this);
+        const id = $this.attr('data-shortcut');
+        const keywords = self.keywordIndex[id] || [];
 
-        var hasMatch = false;
-        for (var i = 0; i < keywords.length; i++) {
+        const hasMatch = false;
+        for (let i = 0; i < keywords.length; i++) {
           if (keywords[i].match(r)) {
             hasMatch = true;
             break;
@@ -301,7 +301,7 @@
     // Sort by the given shortcut attribute
     self.sortRows = function(attr, reverse) {
       attr = attr || 'id';
-      var reverseMod = reverse ? -1 : 1;
+      const reverseMod = reverse ? -1 : 1;
 
       self.shortcuts.sort(function(s1, s2) {
         if (s1[attr] < s2[attr]) {
@@ -325,8 +325,8 @@
     };
   };
 
-  var InfoBox = function(shortcuts, $box) {
-    var self = this;
+  const InfoBox = function(shortcuts, $box) {
+    const self = this;
     self.shortcuts = shortcuts;
     self.$box = $box;
 
@@ -350,19 +350,19 @@
     self.loadEditShortcutForm = function(id) {
       window.location.hash = '#/shortcut/' + id;
 
-      var shortcut = self.shortcuts.byId(id);
+      const shortcut = self.shortcuts.byId(id);
       if (!shortcut) {
         return;
       }
       self.$box.html($('<h2>').text('go/' + shortcut.id));
 
-      var $discard = $('<button>').addClass('discard').text('🗑️');
+      const $discard = $('<button>').addClass('discard').text('🗑️');
       $discard.on('dblclick', function() {
         self.shortcuts.deleteShortcut(id);
       });
       self.$box.append($discard);
 
-      var $form = Forms.updateShortcut.render(shortcut, function(updated) {
+      const $form = Forms.updateShortcut.render(shortcut, function(updated) {
         self.shortcuts.updateShortcut(updated);
       });
       self.$box.append($form);
@@ -371,7 +371,7 @@
     };
 
     self.loadCreateShortcutForm = function() {
-      var $form = Forms.createShortcut.render({}, function(newShortcut) {
+      const $form = Forms.createShortcut.render({}, function(newShortcut) {
         self.shortcuts.createShortcut(newShortcut);
       });
       self.$box.html($form);
@@ -380,8 +380,8 @@
     };
   };
 
-  var Home = function(shortcuts, shortcutTools) {
-    var self = this;
+  const Home = function(shortcuts, shortcutTools) {
+    const self = this;
 
     self.shortcuts = shortcuts;
     self.shortcutTools = shortcutTools;
@@ -397,8 +397,8 @@
 
   };
 
-  var ShortcutTools = function(shortcuts, infoBox, $box) {
-    var self = this;
+  const ShortcutTools = function(shortcuts, infoBox, $box) {
+    const self = this;
 
     self.$box = $box;
     self.shortcuts = shortcuts;
@@ -408,16 +408,16 @@
     self.$sort = self.$box.find('.sort');
     self.$filter = self.$box.find('.filter');
 
-    var isSubscribed = false;
+    let isSubscribed = false;
 
-    var onShortcutsLoaded = function() {
+    const onShortcutsLoaded = function() {
       self.shortcuts.applyFilter(self.$filter.find('input').val());
     };
 
     self.init = function() {
-      var $add = self.$create.find('.add');
-      var $alpha = self.$sort.find('.alpha');
-      var $chrono = self.$sort.find('.chrono');
+      const $add = self.$create.find('.add');
+      const $alpha = self.$sort.find('.alpha');
+      const $chrono = self.$sort.find('.chrono');
 
       $add.on('click', function() {
         self.infoBox.loadCreateShortcutForm();
@@ -426,7 +426,7 @@
       $alpha.on('click', self.shortcuts.sortAlphabetical);
       $chrono.on('click', self.shortcuts.sortChronological);
 
-      var $filterBox = self.$filter.find('input');
+      const $filterBox = self.$filter.find('input');
       $filterBox.on('input', function() {
         self.shortcuts.applyFilter($(this).val());
       });
@@ -438,8 +438,8 @@
     };
   };
 
-  var Go = function(cfg) {
-    var self = this;
+  const Go = function(cfg) {
+    const self = this;
     cfg = cfg || {};
 
     self.noticeHandler = new NoticeHandler(cfg.$notices);
@@ -457,14 +457,14 @@
     /**
      * Bind some keys to shortcut functions while not entering text
      */
-    var handleShortcuts = function(e) {
+    const handleShortcuts = function(e) {
       if (e.key === 'Escape') {
         self.infoBox.hide();
         document.activeElement.blur();
         return;
       }
 
-      var $target = $(e.target);
+      const $target = $(e.target);
 
       if ($target.is('input') || $target.is('form *')) {
         return;
@@ -483,16 +483,16 @@
 
     };
 
-    var bindShortcuts = function() {
+    const bindShortcuts = function() {
       $(document).on('keydown', handleShortcuts);
     };
 
-    var routeRequest = function() {
-      var frag = window.location.hash;
+    const routeRequest = function() {
+      const frag = window.location.hash;
 
       if (frag) {
         if (frag.startsWith('#/go/')) {
-          var shortcut = frag.split('/')[2];
+          const shortcut = frag.split('/')[2];
           Redirector.redirect(
             shortcut,
             function(response) {
