@@ -256,8 +256,8 @@
 
   Forms.createShortcut = new Form(createShortcutFields);
   Forms.updateShortcut = new Form(updateShortcutFields);
-  Forms.onKeywordsIndexed = function(keywords) {
-    registeredKeywords = keywords;
+  Forms.onKeywordsIndexed = function(knownTags) {
+    registeredKeywords = knownTags;
   };
 
   window.Forms = Forms;

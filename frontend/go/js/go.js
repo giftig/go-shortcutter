@@ -116,6 +116,7 @@
     self.$box = $box;
     self.infoBox = null;
 
+    self.shortcuts = [];
     self.keywordIndex = {};
     self.knownTags = [];
 
@@ -163,6 +164,7 @@
 
         for (let j = 0; j < s.tags.length; j++) {
           const t = s.tags[j];
+
           if (self.knownTags.indexOf(t) === -1) {
             self.knownTags.push(t);
           }
@@ -179,7 +181,7 @@
       Client.writeShortcut(
         shortcut,
         function() {
-          self.init()  // TODO: Be more incremental here
+          self.init();  // TODO: Be more incremental here
           self.noticeHandler.displaySuccess('Updated ' + shortcut.id);
         },
         function(response) {
@@ -192,7 +194,9 @@
 
     self.createShortcut = function(shortcut) {
       if (self.byId(shortcut.id)) {
-        self.noticeHandler.displayError('A shortcut with that name already exists; edit it instead.');
+        self.noticeHandler.displayError(
+          'A shortcut with that name already exists; edit it instead.'
+        );
         return false;
       }
 
@@ -272,10 +276,28 @@
       self.$box.html(renderShortcutTable(shortcuts));
     };
 
+    // Shows only the rows with the specified IDs
+    const filterIds = function(ids) {
+      const $rows = self.$box.find('table tr');
+
+      $rows.each(function() {
+        const $this = $(this);
+        const id = $this.attr('data-shortcut');
+
+        if (ids.includes(id)) {
+          $this.show();
+        } else {
+          $this.hide();
+        }
+      });
+    };
+
     // Hide rows which don't match the given regex in id, url, or tags fields
     self.applyFilter = function(s) {
       const r = new RegExp(s);
       const $rows = self.$box.find('table tr');
+
+      // FIXME: Use the structured data instead, why would I do it like this? :(
 
       $rows.each(function() {
         const $this = $(this);
@@ -296,6 +318,17 @@
           $this.hide();
         }
       });
+    };
+
+    // Hide rows which don't contain all of the given tags
+    self.applyTagFilter = function(tags) {
+      let selected = self.shortcuts;
+
+      tags.forEach(function(t) {
+        selected = selected.filter(s => s.tags.includes(t));
+      });
+
+      filterIds(selected.map(s => s.id));
     };
 
     // Sort by the given shortcut attribute
@@ -380,13 +413,16 @@
     };
   };
 
-  const Home = function(shortcuts, shortcutTools) {
+  const Home = function(shortcuts, shortcutTools, tagFilters) {
     const self = this;
 
     self.shortcuts = shortcuts;
     self.shortcutTools = shortcutTools;
+    self.tagFilters = tagFilters;
 
     self.init = function(cb) {
+      self.tagFilters.init();
+
       self.shortcuts.init(function() {
         if (cb) {
           cb();
@@ -396,6 +432,83 @@
     };
 
   };
+
+  const TagFilters = function(shortcutsWidget, $box) {
+    const self = this;
+
+    self.$box = $box;
+    self.shortcutsWidget = shortcutsWidget;
+
+    self.sortedTags = [];
+    self.activeFilters = [];
+
+    // Toggle filtering by the clicked tag and recalculate everything as appropriate + tell the
+    // shortcut widget to filter based on our latest filters as well
+    const onClick = function(tag) {
+      if (self.activeFilters.includes(tag)) {
+        self.activeFilters.splice(self.activeFilters.indexOf(tag), 1);
+      } else {
+        self.activeFilters.push(tag);
+      }
+
+      refreshTags();
+      self.shortcutsWidget.applyTagFilter(self.activeFilters);
+    };
+
+    // Recalculate filteredShortcutsByTag based on current filters and update sortedTags,
+    // which list tags by shortcut count
+    const refreshTags = function(shortcuts) {
+      let filtered = shortcuts || self.shortcutsWidget.shortcuts;
+      self.activeFilters.forEach(function(t) {
+        filtered = filtered.filter(s => s.tags.includes(t));
+      });
+
+      let countsByTag = {};
+      filtered.forEach(function(s) {
+        s.tags.forEach(function(t) {
+          countsByTag[t] = countsByTag[t] || 0;
+          countsByTag[t]++;
+        });
+      });
+
+      const ordered = Object.keys(countsByTag).map(function(t) {
+        return {tag: t, count: countsByTag[t]};
+      });
+      ordered.sort((a, b) => b.count - a.count);
+      self.sortedTags = ordered;
+
+      self.render();
+    };
+
+    const renderTag = function(tagSummary) {
+      const t = tagSummary.tag;
+      const count = tagSummary.count;
+
+      const col = Utils.createColour(t);
+      const label = self.activeFilters.includes(t) ? t : `${t} (${count})`;
+      const $elem = $('<button>').addClass('tag').css({background: col}).text(label);
+
+      if (self.activeFilters.includes(t)) {
+        $elem.addClass('active');
+      }
+
+      $elem.on('click', () => onClick(t));
+
+      return $elem;
+    };
+
+    self.render = function() {
+      self.$box.empty();
+
+      self.sortedTags.forEach(function(e) {
+        self.$box.append(renderTag(e));
+      });
+    };
+
+    self.init = function() {
+      EventBus.subscribe(EventBus.SHORTCUTS_LOADED, refreshTags);
+    };
+  }
 
   const ShortcutTools = function(shortcuts, infoBox, $box) {
     const self = this;
@@ -447,8 +560,9 @@
     self.infoBox = new InfoBox(self.shortcuts, cfg.$infoBox);
     self.shortcuts.infoBox = self.infoBox;
     self.shortcutTools = new ShortcutTools(self.shortcuts, self.infoBox, cfg.$shortcutTools);
+    self.tagFilters = new TagFilters(self.shortcuts, cfg.$tagFilters);
 
-    self.home = new Home(self.shortcuts, self.shortcutTools);
+    self.home = new Home(self.shortcuts, self.shortcutTools, self.tagFilters);
 
     if (cfg.onKeywordsIndexed) {
       EventBus.subscribe(EventBus.KEYWORDS_INDEXED, cfg.onKeywordsIndexed);

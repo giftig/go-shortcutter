@@ -238,6 +238,25 @@ input[type="submit"].plain, input[type="button"].plain, button.plain {
     }
   }
 }
+
+#tag-filters {
+  margin-top: 30px;
+  text-align: justify;
+
+  .tag {
+    border: none;
+    cursor: pointer;
+    color: black;
+    display: inline-block;
+    padding: 3px 10px;
+    margin: 2px;
+
+    &.active {
+      font-weight: bold;
+    }
+  }
+}
+
 input.underline {
   border: none;
   background: none;
