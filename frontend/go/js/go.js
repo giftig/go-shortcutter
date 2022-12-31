@@ -298,21 +298,14 @@
       const $rows = self.$box.find('table tr');
 
       // FIXME: Use the structured data instead, why would I do it like this? :(
+      // FIXME: and make sure it's applied in addition to applyTagFilter too
 
       $rows.each(function() {
         const $this = $(this);
         const id = $this.attr('data-shortcut');
         const keywords = self.keywordIndex[id] || [];
 
-        const hasMatch = false;
-        for (let i = 0; i < keywords.length; i++) {
-          if (keywords[i].match(r)) {
-            hasMatch = true;
-            break;
-          }
-        }
-
-        if (hasMatch) {
+        if (keywords.find(k => k.match(r))) {
           $this.show();
         } else {
           $this.hide();
