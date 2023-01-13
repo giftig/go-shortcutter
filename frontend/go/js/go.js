@@ -117,7 +117,6 @@
     self.infoBox = null;
 
     self.shortcuts = [];
-    self.keywordIndex = {};
     self.knownTags = [];
 
     self.init = function(cb) {
@@ -137,7 +136,7 @@
     self.shortcutsLoaded = function(shortcuts) {
       self.shortcuts = shortcuts;
 
-      self.buildIndex(self.shortcuts);
+      self.buildTagIndex(self.shortcuts);
       self.render(self.shortcuts);
 
       EventBus.fireEvent(EventBus.SHORTCUTS_LOADED, shortcuts);
@@ -154,13 +153,9 @@
       return null;
     };
 
-    self.buildIndex = function(shortcuts) {
-      const keywordIndex = {};
-
+    self.buildTagIndex = function(shortcuts) {
       for (let i = 0; i < shortcuts.length; i++) {
         const s = shortcuts[i];
-        const keywords = [s.id, s.url].concat(s.tags);
-        keywordIndex[s.id] = keywords;
 
         for (let j = 0; j < s.tags.length; j++) {
           const t = s.tags[j];
@@ -173,8 +168,6 @@
 
       self.knownTags.sort();
       EventBus.fireEvent(EventBus.KEYWORDS_INDEXED, self.knownTags);
-
-      self.keywordIndex = keywordIndex;
     };
 
     const writeShortcut = function(shortcut) {
@@ -295,22 +288,18 @@
     // Hide rows which don't match the given regex in id, url, or tags fields
     self.applyFilter = function(s) {
       const r = new RegExp(s);
-      const $rows = self.$box.find('table tr');
 
-      // FIXME: Use the structured data instead, why would I do it like this? :(
       // FIXME: and make sure it's applied in addition to applyTagFilter too
+      const ids = (
+        self.shortcuts
+          .filter(function(s) {
+            const terms = [s.id, s.url].concat(s.tags);
+            return terms.find(t => t.match(r));
+          })
+          .map(s => s.id)
+      );
 
-      $rows.each(function() {
-        const $this = $(this);
-        const id = $this.attr('data-shortcut');
-        const keywords = self.keywordIndex[id] || [];
-
-        if (keywords.find(k => k.match(r))) {
-          $this.show();
-        } else {
-          $this.hide();
-        }
-      });
+      return filterIds(ids);
     };
 
     // Hide rows which don't contain all of the given tags
