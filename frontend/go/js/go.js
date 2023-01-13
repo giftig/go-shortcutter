@@ -120,6 +120,10 @@
     self.knownTags = [];
     self.appliedFilters = {tags: [], search: null};
 
+    // Set to listen for filters being applied; used by the keyword filters,
+    // for example
+    self.filterListeners = [];
+
     self.init = function(cb) {
       cb = cb || function() {};
 
@@ -306,21 +310,19 @@
       });
 
       filterIds(results.map(s => s.id));
-
-      // Return the filtered shortcut list to help update other widgets
-      return results;
+      self.filterListeners.forEach(f => f(results));
     };
 
     // Hide rows which don't match the given regex in id, url, or tags fields
     self.applySearchFilter = function(searchTerm) {
       self.appliedFilters.search = searchTerm;
-      return applyFilters();
+      applyFilters();
     };
 
     // Hide rows which don't contain all of the given tags
     self.applyTagFilter = function(tags) {
       self.appliedFilters.tags = tags;
-      return applyFilters();
+      applyFilters();
     };
 
     // Sort by the given shortcut attribute
@@ -445,7 +447,7 @@
         self.activeFilters.push(tag);
       }
 
-      refreshTags(self.shortcutsWidget.applyTagFilter(self.activeFilters));
+      self.shortcutsWidget.applyTagFilter(self.activeFilters);
     };
 
     // Recalculate filteredShortcutsByTag based on current filters and update sortedTags,
@@ -458,6 +460,7 @@
           countsByTag[t]++;
         });
       });
+
       // Make sure an entry appears for any applied tag filters, even if no shortcuts match
       // This may happen if a search filter eliminates all matches for that tag
       self.activeFilters.forEach(function(f) {
@@ -508,6 +511,7 @@
 
     self.init = function() {
       EventBus.subscribe(EventBus.SHORTCUTS_LOADED, refreshTags);
+      self.shortcutsWidget.filterListeners.push(refreshTags);
     };
   }
 
