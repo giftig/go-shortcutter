@@ -471,13 +471,9 @@
         return {tag: t, count: countsByTag[t], active: self.activeFilters.includes(t)};
       });
 
-      ordered.sort(function(a, b) {
-        // Active filters are listed first
-        if (a.active !== b.active) {
-          return a.active ? -1 : 1;
-        }
-        return b.count - a.count
-      });
+      ordered.sort(
+        (a, b) => b.active - a.active || b.count - a.count || a.tag.localeCompare(b.tag)
+      );
 
       self.sortedTags = ordered;
 
