@@ -118,6 +118,7 @@
 
     self.shortcuts = [];
     self.knownTags = [];
+    self.appliedFilters = {tags: [], search: null};
 
     self.init = function(cb) {
       cb = cb || function() {};
@@ -285,32 +286,41 @@
       });
     };
 
+    // Refresh the current shortcut list by applying the current filters
+    const applyFilters = function() {
+      let results = self.shortcuts;
+
+      // First apply the search filter, if any
+      if (self.appliedFilters.search) {
+        const r = new RegExp(self.appliedFilters.search);
+
+        results = results.filter(function(s) {
+          const terms = [s.id, s.url].concat(s.tags);
+          return terms.find(t => t.match(r));
+        });
+      }
+
+      // Then strip down results by each tag, leaving only those with all tags
+      (self.appliedFilters.tags || []).forEach(function(t) {
+        results = results.filter(s => s.tags.includes(t));
+      });
+
+      filterIds(results.map(s => s.id));
+
+      // Return the filtered shortcut list to help update other widgets
+      return results;
+    };
+
     // Hide rows which don't match the given regex in id, url, or tags fields
-    self.applyFilter = function(s) {
-      const r = new RegExp(s);
-
-      // FIXME: and make sure it's applied in addition to applyTagFilter too
-      const ids = (
-        self.shortcuts
-          .filter(function(s) {
-            const terms = [s.id, s.url].concat(s.tags);
-            return terms.find(t => t.match(r));
-          })
-          .map(s => s.id)
-      );
-
-      return filterIds(ids);
+    self.applySearchFilter = function(searchTerm) {
+      self.appliedFilters.search = searchTerm;
+      return applyFilters();
     };
 
     // Hide rows which don't contain all of the given tags
     self.applyTagFilter = function(tags) {
-      let selected = self.shortcuts;
-
-      tags.forEach(function(t) {
-        selected = selected.filter(s => s.tags.includes(t));
-      });
-
-      filterIds(selected.map(s => s.id));
+      self.appliedFilters.tags = tags;
+      return applyFilters();
     };
 
     // Sort by the given shortcut attribute
@@ -427,36 +437,45 @@
     // Toggle filtering by the clicked tag and recalculate everything as appropriate + tell the
     // shortcut widget to filter based on our latest filters as well
     const onClick = function(tag) {
+      // TODO: Filter based on return value from applyTagFilter, and have it return the
+      // modified shortcut list.
       if (self.activeFilters.includes(tag)) {
         self.activeFilters.splice(self.activeFilters.indexOf(tag), 1);
       } else {
         self.activeFilters.push(tag);
       }
 
-      refreshTags();
-      self.shortcutsWidget.applyTagFilter(self.activeFilters);
+      refreshTags(self.shortcutsWidget.applyTagFilter(self.activeFilters));
     };
 
     // Recalculate filteredShortcutsByTag based on current filters and update sortedTags,
     // which list tags by shortcut count
     const refreshTags = function(shortcuts) {
-      let filtered = shortcuts || self.shortcutsWidget.shortcuts;
-      self.activeFilters.forEach(function(t) {
-        filtered = filtered.filter(s => s.tags.includes(t));
-      });
-
       let countsByTag = {};
-      filtered.forEach(function(s) {
+      shortcuts.forEach(function(s) {
         s.tags.forEach(function(t) {
           countsByTag[t] = countsByTag[t] || 0;
           countsByTag[t]++;
         });
       });
+      // Make sure an entry appears for any applied tag filters, even if no shortcuts match
+      // This may happen if a search filter eliminates all matches for that tag
+      self.activeFilters.forEach(function(f) {
+        countsByTag[f] = countsByTag[f] || 0;
+      });
 
       const ordered = Object.keys(countsByTag).map(function(t) {
-        return {tag: t, count: countsByTag[t]};
+        return {tag: t, count: countsByTag[t], active: self.activeFilters.includes(t)};
       });
-      ordered.sort((a, b) => b.count - a.count);
+
+      ordered.sort(function(a, b) {
+        // Active filters are listed first
+        if (a.active !== b.active) {
+          return a.active ? -1 : 1;
+        }
+        return b.count - a.count
+      });
+
       self.sortedTags = ordered;
 
       self.render();
@@ -467,10 +486,10 @@
       const count = tagSummary.count;
 
       const col = Utils.createColour(t);
-      const label = self.activeFilters.includes(t) ? t : `${t} (${count})`;
+      const label = tagSummary.active ? t : `${t} (${count})`;
       const $elem = $('<button>').addClass('tag').css({background: col}).text(label);
 
-      if (self.activeFilters.includes(t)) {
+      if (tagSummary.active) {
         $elem.addClass('active');
       }
 
@@ -506,7 +525,8 @@
     let isSubscribed = false;
 
     const onShortcutsLoaded = function() {
-      self.shortcuts.applyFilter(self.$filter.find('input').val());
+      self.shortcuts.applySearchFilter(self.$filter.find('input').val());
+      // TODO: Apply tag filter based on querystring as well
     };
 
     self.init = function() {
@@ -523,7 +543,7 @@
 
       const $filterBox = self.$filter.find('input');
       $filterBox.on('input', function() {
-        self.shortcuts.applyFilter($(this).val());
+        self.shortcuts.applySearchFilter($(this).val());
       });
 
       if (!isSubscribed) {
