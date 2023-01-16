@@ -11,7 +11,7 @@ setup(
         ]
     },
     maintainer='Rob Moore',
-    maintainer_email='giftiger.wunsch@xantoria.com',
-    url='http://www.xantoria.com/',
+    maintainer_email='rob.moore@scalable-solutions.co.uk',
+    url='http://www.scalable-solutions.co.uk/',
     install_requires=['Flask>=1.1.2', 'gunicorn>=20.0.4']
 )
