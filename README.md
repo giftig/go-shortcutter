@@ -21,7 +21,19 @@ echo '127.0.0.1 go' >> /etc/hosts
 
 You may need to use `sudo` to do this.
 
+## Usage
+
+Once set up, you can simply type `go/` in the browser to see the shortcut summary view, which
+sorts shortcuts by last modified and has controls to search, filter, and add/remove shortcuts.
+Keywords are provided courtesy of [tagify][tagify].
+
+Once you have shortcuts, simply type `go/<shortcut>` and you'll be redirected to your bookmark.
+
+
 ## Structure
 
 Currently the application has a Flask backend offering a simple API for storing shortcuts, and
-a basic javascript frontend (served via nginx).
+a basic javascript frontend (served via nginx). Shortcuts are stored in a local JSON file which
+is mounted by the docker-compose.
+
+[tagify]: https://github.com/yairEO/tagify
