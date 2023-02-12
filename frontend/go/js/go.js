@@ -2,6 +2,17 @@
   const SHORTCUT_TRUNCATE_LENGTH = 16;
   const URL_TRUNCATE_LENGTH = 40;
 
+  // TODO: Add namespaces to the shortcut data instead of fudging it
+  const PSEUDO_NAMESPACES = ['private', 'default'];
+
+  const Namespaces = {
+    apply: function(shortcuts, namespace) {
+      console.log('NAMESPACE', namespace);
+      const filters = PSEUDO_NAMESPACES.filter(n => n !== namespace);
+      return shortcuts.filter(s => s.tags.filter(k => filters.includes(k)).length === 0);
+    }
+  };
+
   // Pubsub system for basic interface events
   const EventBus = {
     subscribers: [],
@@ -124,13 +135,16 @@
     // for example
     self.filterListeners = [];
 
-    self.init = function(cb) {
-      cb = cb || function() {};
+    self.init = function(cfg) {
+      cfg = cfg || {};
+      cfg.cb = cfg.cb || function() {};
 
       Client.listShortcuts(
         function(shortcuts) {
-          self.shortcutsLoaded(shortcuts);
-          cb(shortcuts);
+          const namespaced = Namespaces.apply(shortcuts, cfg.namespace);
+          console.log(namespaced);
+          self.shortcutsLoaded(namespaced);
+          cfg.cb(namespaced);
         },
         function(response) {
           self.noticeHandler.displayError('Failed to load shortcut list!');
@@ -413,16 +427,21 @@
     self.shortcuts = shortcuts;
     self.shortcutTools = shortcutTools;
     self.tagFilters = tagFilters;
+    self.namespace = null;
 
-    self.init = function(cb) {
+    self.init = function(cfg) {
+      cfg = cfg || {};
+
       self.tagFilters.init();
-
-      self.shortcuts.init(function() {
-        if (cb) {
-          cb();
+      const cb = function() {
+        if (cfg.cb) {
+          cfg.cb();
         }
         self.shortcutTools.init();
-      });
+      };
+
+      self.namespace = cfg.namespace;
+      self.shortcuts.init({cb: cb, namespace: self.namespace});
     };
 
   };
@@ -573,7 +592,7 @@
     /**
      * Bind some keys to shortcut functions while not entering text
      */
-    const handleShortcuts = function(e) {
+    const handleKeyboardShortcuts = function(e) {
       if (e.key === 'Escape') {
         self.infoBox.hide();
         document.activeElement.blur();
@@ -597,10 +616,19 @@
         return false;
       }
 
+      if (e.key === 'n') {
+        const n = self.home.namespace;
+        const next = (
+          PSEUDO_NAMESPACES[(PSEUDO_NAMESPACES.indexOf(n) + 1) % PSEUDO_NAMESPACES.length]
+        );
+        window.location.hash = `#/namespace/${next}`;
+        self.home.init({namespace: next});
+      }
+
     };
 
-    const bindShortcuts = function() {
-      $(document).on('keydown', handleShortcuts);
+    const bindKeyboardShortcuts = function() {
+      $(document).on('keydown', handleKeyboardShortcuts);
     };
 
     const routeRequest = function() {
@@ -629,15 +657,27 @@
         }
 
         if (frag.startsWith('#/shortcut/')) {
-          bindShortcuts();
-          self.home.init(function() {
-            self.infoBox.loadEditShortcutForm(frag.split('/')[2]);
+          bindKeyboardShortcuts();
+          self.home.init({
+            cb: function() {
+              self.infoBox.loadEditShortcutForm(frag.split('/')[2]);
+            }
           });
+          return;
+        }
+
+        // TODO: Implement a real namespace feature on shortcuts, for now we just
+        // use some fake ones by filtering out shortcuts with tags we want to treat
+        // as namespaces
+        if (frag.startsWith('#/namespace/')) {
+          const namespace = frag.split('/')[2];
+          bindKeyboardShortcuts();
+          self.home.init({namespace: namespace});
           return;
         }
       }
 
-      bindShortcuts();
+      bindKeyboardShortcuts();
       self.home.init();
     };
 
